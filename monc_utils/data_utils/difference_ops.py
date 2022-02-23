@@ -9,7 +9,7 @@ Difference operators for C-grid data.
 """
 import numpy as np
 import monc_utils
-#from .dask_utils import re_chunk
+from .dask_utils import re_chunk
 from .string_utils import get_string_index
 import xarray
 
@@ -18,10 +18,10 @@ warnings.filterwarnings("ignore", category=FutureWarning,
                                    module='xarray.core.missing')
 
 
-grid_def = { 'p':('x_p', 'y_p', 'zn'),
-             'u':('x_u', 'y_p', 'zn'),
-             'v':('x_p', 'y_v', 'zn'),
-             'w':('x_p', 'y_p', 'z')}
+grid_def = { 'p':('x_p', 'y_p', 'z_p'),
+             'u':('x_u', 'y_p', 'z_p'),
+             'v':('x_p', 'y_v', 'z_p'),
+             'w':('x_p', 'y_p', 'z_w')}
 
 
 def exec_fn(fn, field: xarray.DataArray, axis: int) -> xarray.DataArray:
@@ -45,15 +45,15 @@ def exec_fn(fn, field: xarray.DataArray, axis: int) -> xarray.DataArray:
     if monc_utils.global_config['no_dask']:
         field = fn(field)
     else:
-        if subfilter.global_config['use_map_overlap']:
+        if monc_utils.global_config['use_map_overlap']:
             print('Using map_overlap.')
             d = field.data.map_overlap(fn, depth={axis:1},
                                       boundary={axis:'periodic'})
             field.data = d
         else:
-#            sh = np.shape(field)
-#            ch = {field.dims[axis]:sh[axis]}
-#            field = re_chunk(field, chunks=ch)
+            sh = np.shape(field)
+            ch = {field.dims[axis]:sh[axis]}
+            field = re_chunk(field, chunks=ch)
             field = fn(field)
     return field
 
@@ -121,7 +121,7 @@ def grid_conform_x(field, target_xdim):
         return field
     xdim = field.dims[xaxis]
     if xdim == target_xdim:
-        print(f'xdim is already {target_xdim}')
+        print(f'{field.name} xdim is already {target_xdim}')
         return field
     x = field.coords[xdim].data
     dx = x[1] - x[0]
@@ -135,7 +135,7 @@ def grid_conform_x(field, target_xdim):
         print(f"Cannot transform {xdim} to {target_xdim}")
         return field
 
-    print(f'{xdim} to {target_xdim}')
+    print(f'{field.name} {xdim} to {target_xdim}')
     newfield = field.rename({xdim:target_xdim})
     newfield = exec_fn(xmn, newfield, xaxis)
     newfield.coords[target_xdim] = x_new
@@ -164,7 +164,7 @@ def grid_conform_y(field, target_ydim):
         return field
     ydim = field.dims[yaxis]
     if ydim == target_ydim:
-        print(f'ydim is already {target_ydim}')
+        print(f'{field.name} ydim is already {target_ydim}')
         return field
     y = field.coords[ydim].data
     dy = y[1] - y[0]
@@ -178,7 +178,7 @@ def grid_conform_y(field, target_ydim):
         print(f"Cannot transform {ydim} to {target_ydim}")
         return field
 
-    print(f'{ydim} to {target_ydim}')
+    print(f'{field.name} {ydim} to {target_ydim}')
     newfield = field.rename({ydim:target_ydim})
     newfield = exec_fn(ymn, newfield, yaxis)
     newfield.coords[target_ydim] = y_new
@@ -208,16 +208,16 @@ def grid_conform_z(field, z, zn, target_zdim):
         return field
     zdim = field.dims[zaxis]
     if zdim == target_zdim:
-        print(f'zdim is already {target_zdim}')
+        print(f'{field.name} zdim is already {target_zdim}')
         return field
-    elif target_zdim == 'z':
-        print(f'{zdim} to {target_zdim}')
+    elif target_zdim == 'z_w':
+        print(f'{field.name} {zdim} to {target_zdim}')
         return interpolate(field, z)
-    elif target_zdim == 'zn':
-        print(f'{zdim} to {target_zdim}')
+    elif target_zdim == 'z_p':
+        print(f'{field.name} {zdim} to {target_zdim}')
         return interpolate(field, zn)
     else:
-        print(f"Cannot transform {zdim} to {target_zdim}")
+        print(f"{field.name}: cannot transform {zdim} to {target_zdim}")
         return field
 
 def grid_conform(field, z, zn, grid: str = 'p' ):
@@ -365,15 +365,15 @@ def d_by_dz_field(field, z, zn, grid: str = 'p'):
     [zaxis] = get_string_index(field.dims,['z'])
     zdim = field.dims[zaxis]
     zcoord = field.coords[zdim].data
-    if zdim == 'zn':
-        print("d_by_dz_field_on_zn ")
+    if zdim == 'z_p':
+        print("d_by_dz_field_on_z_p ")
         zdim_new = 'zi'
         pad = (0,1)
         nroll = -1
         (exn, dexn) = (-1, -1)
     else:
-        print("d_by_dz_field_on_z ")
-        zdim_new = 'zn'
+        print("d_by_dz_field_on_z_w ")
+        zdim_new = 'z'
         pad = (1,0)
         nroll = 1
         (exn, dexn) = (0, 1)

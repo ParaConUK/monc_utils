@@ -3,14 +3,15 @@ Created on Mon Aug  2 11:01:11 2021.
 
 @author: Peter Clark
 """
-import sys
 import numpy as np
-import re
 import xarray
-from monc_utils.io.file_utils import options_database
+from monc_utils.io.file_utils import (options_database,
+                                      configure_model_resolution,
+                                      )
 from monc_utils.data_utils.string_utils import get_string_index
-#from monc_utils.utils.dask_utils import re_chunk
 from monc_utils.io.dataout import save_field
+from monc_utils.data_utils.dask_utils import re_chunk
+
 import monc_utils.data_utils.difference_ops as do
 import monc_utils.thermodynamics.thermodynamics as th
 import monc_utils.thermodynamics.thermodynamics_constants as thc
@@ -19,7 +20,7 @@ import monc_utils
 def correct_grid_and_units(var_name: str,
                            vard: xarray.core.dataarray.DataArray,
                            source_dataset: xarray.core.dataset.Dataset,
-                           options: dict):
+                           options: dict=None):
     """
     Correct input grid specification.
 
@@ -31,7 +32,7 @@ def correct_grid_and_units(var_name: str,
         Input (at least 2D) data.
     source_dataset : xarray.core.dataset.Dataset
         Source dataset for vard
-    options : dict
+    options : dict(optional - default=None)
         Options possibly used are 'dx' and 'dy'.
 
     Returns
@@ -62,7 +63,8 @@ def correct_grid_and_units(var_name: str,
                       }
 
     # Get model resolution values
-    dx, dy, options = configure_model_resolution(source_dataset, options)
+    dx, dy, options = configure_model_resolution(source_dataset,
+                                                 options=options)
 
     # Add correct x and y grids.
 
@@ -95,15 +97,22 @@ def correct_grid_and_units(var_name: str,
             vard = vard.rename({'y':yn})
             vard.coords[yn] = y
 
-        if 'z' in vard.dims and not vp[2]:
-            zn = source_dataset.coords['zn']
-            vard = vard.rename({'z':'zn'})
-            vard.coords['zn'] = zn.data
+        if 'z' in vard.dims:
+            if vp[2]:
+                vard = vard.rename({'z':'z_w'})
+            else:
+                zn = source_dataset.coords['zn']
+                vard = vard.rename({'z':'z_p'})
+                vard.coords['z'] = zn.data
 
-        if 'zn' in vard.dims and vp[2]:
-            z = source_dataset.coords['z']
-            vard = vard.rename({'zn':'z'})
-            vard.coords['z'] = z.data
+        if 'zn' in vard.dims:
+            if vp[2]:
+                z = source_dataset.coords['z']
+                vard = vard.rename({'zn':'z_w'})
+                vard.coords['z_w'] = z.data
+            else:
+                vard = vard.rename({'zn':'z_p'})
+
 
         vard.attrs['units'] = var_properties[var_name]['units']
 
@@ -123,12 +132,19 @@ def correct_grid_and_units(var_name: str,
             vard = vard.rename({'y':yn})
             vard.coords[yn] = y
 
+        if 'z' in vard.dims:
+            vard = vard.rename({'z':'z_w'})
+
+        if 'zn' in vard.dims:
+            vard = vard.rename({'zn':'z_p'})
+
+
         vard.attrs['units'] = ''
 
     return vard
 
-def get_derived_vars(source_dataset, ref_dataset, options,
-                     var_name: str, derived_vars: dict):
+def get_derived_vars(source_dataset, ref_dataset,
+                     var_name: str, derived_vars: dict, options: dict=None):
     """
     Get data from source_dataset and compute required variable.
 
@@ -138,12 +154,12 @@ def get_derived_vars(source_dataset, ref_dataset, options,
         Input (at least 2D) data.
     ref_dataset : xarray Dataset
         Contains reference profiles. Can be None.
-    options : dict
-        Options. Options possibly used are 'dx' and 'dy'.
     var_name : str
         Name of variable to retrieve.
     derived_vars : dict
         Maps var_name to function name and argument list.
+    options : dict (optional - default=None)
+        Options. Options possibly used are 'dx' and 'dy'.
 
     Returns
     -------
@@ -156,14 +172,14 @@ def get_derived_vars(source_dataset, ref_dataset, options,
     for v in dv['vars']:
         if v == 'piref':
             pref = get_pref(source_dataset, ref_dataset,
-                                     options)
+                                     options=options)
             args.append(th.exner(pref))
         elif v == 'pref':
             pref = get_pref(source_dataset, ref_dataset,
-                                     options)
+                                     options=options)
             args.append(pref)
         else:
-            var = get_data(source_dataset, ref_dataset, v, options,
+            var = get_data(source_dataset, ref_dataset, v, options=options,
                            allow_none=True)
             args.append(var)
     vard = dv['func'](*args)
@@ -172,7 +188,8 @@ def get_derived_vars(source_dataset, ref_dataset, options,
     return vard
 
 
-def get_data(source_dataset, ref_dataset, var_name: str, options: dict,
+def get_data(source_dataset, ref_dataset, var_name: str,
+             options: dict=None,
              allow_none: bool=False) :
     """
     Extract data or derived data field from source NetCDF dataset.
@@ -182,7 +199,7 @@ def get_data(source_dataset, ref_dataset, var_name: str, options: dict,
     Otherwise, it is assumed to be on a 'p' point.
 
     Currently written for MONC data, enforcing C-grid. Returned coords are
-    'x_p', 'x_u', 'y_p', 'y_v', 'z', 'zn'. Coordinate x- and -y values are
+    'x_p', 'x_u', 'y_p', 'y_v', 'z_w', 'z_p'. Coordinate x- and -y values are
     retrieved from the MONC options_database in source_dataset
     or from 'dx' and 'dy' in options otherwise.
 
@@ -202,7 +219,7 @@ def get_data(source_dataset, ref_dataset, var_name: str, options: dict,
         Contains reference profiles. Can be None.
     var_name : str
         Name of variable to retrieve.
-    options : dict
+    options : dict (optional - default=None)
         Options possibly used are 'dx' and 'dy'.
     allow_none : bool (optional - default=False)
         If True, return None if not found.
@@ -219,7 +236,9 @@ def get_data(source_dataset, ref_dataset, var_name: str, options: dict,
     try:
         if var_name in source_dataset:
             vard = source_dataset[var_name]
-        elif 'aliases' in options and var_name in options['aliases']:
+        elif options is not None \
+            and 'aliases' in options \
+            and var_name in options['aliases']:
             for alias in options['aliases'][var_name]:
                 if alias in source_dataset:
                     print(f'Retrieving {alias:s} as {var_name:s}.')
@@ -227,61 +246,64 @@ def get_data(source_dataset, ref_dataset, var_name: str, options: dict,
                     vard.name = var_name
                     break
             else:
-                raise KeyError()
-            # Change 'timeseries...' variable to 'time'
+                raise KeyError(f"Cannot retrieve {var_name}")
         else:
-            raise KeyError()
+            raise KeyError(f"Cannot retrieve {var_name}")
 
+        # Change 'timeseries...' variable to 'time'
         [itime] = get_string_index(vard.dims, ['time'])
         if itime is not None:
             vard = vard.rename({vard.dims[itime]: 'time'})
 
-        vard = correct_grid_and_units(var_name, vard, source_dataset, options)
-
-#        print(vard)
-
         if var_name == 'th' :
-            thref = get_thref(ref_dataset, options)
+            thref = get_thref(ref_dataset,
+                              options=options)
+            if len(thref.coords['time']) > 1:
+                thref = thref.isel(time=0).squeeze(drop=True)
             vard += thref
 
         if var_name == 'p' :
             pref = get_pref(source_dataset, ref_dataset,
-                          options)
+                            options=options)
+            if len(pref.coords['time']) > 1:
+                pref = pref.isel(time=0).squeeze(drop=True)
             vard += pref
+
+        vard = correct_grid_and_units(var_name, vard, source_dataset,
+                                      options=options)
 
     except KeyError:
 
         if var_name == 'thref' :
-            vard = get_thref(ref_dataset, options)
+            vard = get_thref(ref_dataset, options=options)
         elif var_name == 'pref' :
-            vard = get_pref(source_dataset, ref_dataset,
-                          options)
+            vard = get_pref(source_dataset, ref_dataset, options=options)
         elif var_name == 'piref' :
             vard = th.exner(get_pref(source_dataset, ref_dataset,
-                          options))
+                                     options=options))
         elif var_name == 'z' :
             z = ref_dataset.dims['z']
-            vard += z
+            vard += z #???????????????????
         elif var_name == 'zn' :
             zn = ref_dataset.dims['zn']
-            vard += zn
+            vard += zn #??????????????????
 
         elif var_name in th.derived_vars:
 
-            vard = get_derived_vars(source_dataset, ref_dataset, options,
-                                    var_name, th.derived_vars)
+            vard = get_derived_vars(source_dataset, ref_dataset,
+                                    var_name, th.derived_vars,
+                                    options=options)
 
         else :
-
             if allow_none:
                 vard = None
             else:
-                sys.exit(f"Data {var_name:s} not in dataset.")
-#    print(vard)
+                raise KeyError(f"Data {var_name:s} not in dataset.")
 
     return vard
 
-def get_and_transform(source_dataset, ref_dataset, var_name, options,
+def get_and_transform(source_dataset, ref_dataset, var_name,
+                      options=None,
                       grid='p'):
     """
     Extract data from dataset and transform to alternative grid.
@@ -296,7 +318,7 @@ def get_and_transform(source_dataset, ref_dataset, var_name, options,
         Contains reference profiles. Can be None.
     var_name : str
         Name of variable to retrieve.
-    options : dict
+    options : dict (optional - default=None)
         Options. Options possibly used are 'dx' and 'dy'.
     grid : str, optional
         Destination grid 'u', 'v', 'w' or 'p'. Default is 'p'.
@@ -309,20 +331,33 @@ def get_and_transform(source_dataset, ref_dataset, var_name, options,
     @author: Peter Clark
 
     """
-    var = get_data(source_dataset, ref_dataset, var_name, options)
-    z = source_dataset["z"]
-    zn = source_dataset["zn"]
+    var = get_data(source_dataset, ref_dataset, var_name, options=options)
+    if "z" in source_dataset.dims:
+        z = source_dataset["z"].rename({'z':'z_w'})
+    elif "z_w" in source_dataset.dims:
+        z = source_dataset["z_w"]
+    else:
+        raise KeyError("Cannot find z in dataset.")
+    if "zn" in source_dataset.dims:
+        zn = source_dataset["zn"].rename({'z':'z_p'})
+    elif "z_p" in source_dataset.dims:
+        zn = source_dataset["z_p"]
+    else:
+        raise KeyError("Cannot find zn in dataset.")
+
     var = do.grid_conform(var, z, zn, grid = grid )
 
     # Re-chunk data if using dask
-#    if not monc_utils.global_config['no_dask']:
-#        var = re_chunk(var)
+    if not monc_utils.global_config['no_dask']:
+        var = re_chunk(var)
 #    print(var)
 
     return var
 
-def get_data_on_grid(source_dataset, ref_dataset, derived_dataset, var_name,
-                     options, grid='p') :
+def get_data_on_grid(source_dataset, ref_dataset, var_name,
+                     derived_dataset=None,
+                     options=None,
+                     grid='p') :
     """
     Find data from source_dataset remapped to destination grid.
 
@@ -339,11 +374,11 @@ def get_data_on_grid(source_dataset, ref_dataset, derived_dataset, var_name,
         Input (at least 2D) data.
     ref_dataset : xarray Dataset
         Contains reference profiles. Can be None.
-    derived_dataset : dict
-        'ds' points to xarray Dataset, 'file' to output file path.
     var_name : str
         Name of variable to retrieve.
-    options : dict
+    derived_dataset : dict, optional
+        'ds' points to xarray Dataset, 'file' to output file path.
+    options : dict, (optional - default=None)
         Options. Options possibly used are 'dx' and 'dy'.
     grid : str, optional
         Destination grid 'u', 'v', 'w' or 'p'. Default is 'p'.
@@ -357,7 +392,6 @@ def get_data_on_grid(source_dataset, ref_dataset, derived_dataset, var_name,
     """
     ongrid = '_on_'+grid
 
-    var_found = False
     # Logic here:
     # If var_name already qualified with '_on_x', where x is a grid
     # then if x matches required output grid, see if in derived_dataset
@@ -377,27 +411,28 @@ def get_data_on_grid(source_dataset, ref_dataset, derived_dataset, var_name,
 
 #    op_var = { 'name' : op_var_name }
 
-    if options['save_all'].lower() == 'yes':
+    if options is not None and options['save_all'].lower() == 'yes':
 
-        if op_var_name in derived_dataset['ds'].variables:
+        if derived_dataset is not None \
+            and op_var_name in derived_dataset['ds'].variables:
 
             op_var = derived_dataset['ds'][op_var_name]
             print(f'Retrieved {op_var_name:s} from derived dataset.')
-            var_found = True
+            return op_var
 
+    op_var = get_and_transform(source_dataset, ref_dataset,
+                               var_name, options=options, grid=grid)
+    op_var.name = op_var_name
 
-    if not var_found:
-        op_var = get_and_transform(source_dataset, ref_dataset,
-                                   var_name, options, grid=grid)
-        op_var.name = op_var_name
+    if options is not None and options['save_all'].lower() == 'yes':
 
-        if options['save_all'].lower() == 'yes':
+        if derived_dataset is not None \
+            and op_var_name not in derived_dataset['ds'].variables:
             op_var = save_field(derived_dataset, op_var)
-            # print(op_var)
 
     return op_var
 
-def get_pref(source_dataset, ref_dataset,  options):
+def get_pref(source_dataset, ref_dataset,  options=None):
     """
     Get reference pressure profile for source_dataset.
 
@@ -410,7 +445,7 @@ def get_pref(source_dataset, ref_dataset,  options):
         MONC output file.
     ref_dataset :  netCDF4 file or None
         MONC output file containing 1D variable prefn.
-    options : dict
+    options : dict (optional - default=None)
         Options. Options possibly used are th_ref.
 
     Returns
@@ -425,7 +460,10 @@ def get_pref(source_dataset, ref_dataset,  options):
         else:
             p_surf = thc.p_ref_theta
 
-        thref = options['th_ref']
+        if options is None:
+            thref = 300.0
+        else:
+            thref = options['th_ref']
 
         zn = source_dataset.variables['zn'][...]
         piref0 = (p_surf/thc.p_ref_theta)**thc.kappa
@@ -443,7 +481,7 @@ def get_pref(source_dataset, ref_dataset,  options):
 
     return pref
 
-def get_thref(ref_dataset, options):
+def get_thref(ref_dataset, options=None):
     """
     Get thref profile from ref_dataset.
 
@@ -461,7 +499,10 @@ def get_thref(ref_dataset, options):
 
     """
     if ref_dataset is None:
-        thref = options['th_ref']
+        if options is None:
+            thref = 300.0
+        else:
+            thref = options['th_ref']
     else:
         thref = ref_dataset['thref']
         [itime] = get_string_index(thref.dims, ['time'])
@@ -472,99 +513,3 @@ def get_thref(ref_dataset, options):
             # thref = thref.drop_vars(tdim)
 
     return thref
-
-def configure_model_resolution(dataset, options):
-    """
-    Find model resolution from available sources.
-
-    This routine applies an order of precedence between potential
-    pre-existing records of MONC horizontal resolutions and ensures
-    that the options dictionary contains these values.
-
-    Files written via io/dataout.py's setup_child_file will have
-    the correct value listed in the file's global attributes, as this
-    routine is called within that space.
-
-    Repeated calls to this routine (for instance, to simply obtain
-    dx and dy) will not modify the options contents.
-
-    Precedence:
-       1. options_database
-       2. dataset attributes
-       3. monc_utils options
-       4. parse file path containing resolution encoding
-
-    Parameters
-    ----------
-    dataset : xarray dataset
-        any monc_utils-compatible dataset
-    options : dict
-        dataset-associated options dictionary
-
-    Returns
-    -------
-    dx : float (expected)
-        x-direction MONC resolution [m]
-    dy : float (expected)
-        y-direction MONC resolution [m]
-    options : dict
-        input options dictionary, possibly updated with dx and dy keys
-    """
-    od = options_database(dataset)
-    attrs = dataset.attrs
-
-    # 1st priority: pull from options_database, if present
-    if type(od) is dict:
-        dx = float(od['dxx'])
-        dy = float(od['dyy'])
-        options['dx'] = dx
-        options['dy'] = dy
-    # 2nd priority: pull from dataset attributes
-    elif ('dx' in attrs and 'dy' in attrs):
-        dx = attrs['dx']
-        dy = attrs['dy']
-        options['dx'] = dx
-        options['dy'] = dy
-    # 3rd priority: use values present in options
-    elif ('dx' in options and 'dy' in options):
-        dx = options['dx']
-        dy = options['dy']
-    # 4th priority: parse file path for coded info
-    elif 'input_file' in options:
-        dx = path_to_resolution(options['input_file'])
-        dy = dx
-        options['dx'] = dx
-        options['dy'] = dy
-    else:
-        raise RuntimeError("Cannot determine grid resolution.")
-
-    return dx, dy, options
-
-
-def path_to_resolution(inpath):
-    """
-    Pull resolution value from an encoded path as a float.
-
-    e.g., 'BOMEX_m0020_g0800'
-    i.e., it should have '_m[0-9][0-9][0-9]' (at least 3 integers)
-
-    Parameters
-    ----------
-    inpath : str
-        file path
-
-    Returns
-    -------
-    dx : float
-        MONC horizontal resolution [m]
-    """
-    fullpath = inpath
-    # Allow for variable length integer string.
-    usc = [i for i, ltr in enumerate(fullpath) if ltr not in '0123456789']
-    usc.append(len(fullpath))
-    usc = np.asarray(usc)
-    mnc = [m.start(0) for m in re.finditer('_m[0-9][0-9][0-9]', fullpath)][-1] + 2
-    enc = usc[usc > mnc].min()
-    dx = float(fullpath[mnc:enc])
-
-    return dx
