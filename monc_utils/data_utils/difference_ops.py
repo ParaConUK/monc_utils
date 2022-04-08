@@ -5,6 +5,19 @@ Created on Wed Apr 17 21:03:43 2019
 
 Difference operators for C-grid data.
 
+Note: written for MONC grid:
+   v[i  ,j  ,k] -- +            -- v[i+1 ,j  ,k] --+   
+   |               |               |               |
+   |               |               |               |
+-- p[i  ,j  ,k] -- u[i  ,j  ,k] -- p[i+1,j  ,k] -- u[i+1,j,k]   
+   |               |               |               |
+   |               |               |               |
+   
+The 0th point is a p point. We have decided this is at dx/2, dy/2 
+
+roll(f, +1) shifts data right, so is equivalent to f[i-1] (or j-1).
+ 
+
 @author: Peter Clark
 """
 import numpy as np
@@ -46,7 +59,7 @@ def exec_fn(fn, field: xarray.DataArray, axis: int) -> xarray.DataArray:
         field = fn(field)
     else:
         if monc_utils.global_config['use_map_overlap']:
-            print('Using map_overlap.')
+#            print('Using map_overlap.')
             d = field.data.map_overlap(fn, depth={axis:1},
                                       boundary={axis:'periodic'})
             field.data = d
@@ -76,9 +89,9 @@ def last_dim(z) :
         zd = zd[0,...]
     return zd
 
-def interpolate(field, znew) :
+def interpolate_z(field, znew) :
     """
-    Interpolate field from z to zn.
+    Interpolate field znew.
 
     Parameters
     ----------
@@ -87,7 +100,7 @@ def interpolate(field, znew) :
 
     Returns
     -------
-        field on zn levels
+        field on znew levels
     @author: Peter Clark
     """
     [zaxis] = get_string_index(field.dims,['z'])
@@ -126,10 +139,12 @@ def grid_conform_x(field, target_xdim):
     x = field.coords[xdim].data
     dx = x[1] - x[0]
     if target_xdim == 'x_p':
-        xmn = lambda arr:(0.5 * (arr + np.roll(arr, -1, axis=xaxis)))
+        # Data on x_u will have (f[i] + f[i-1])/2 on x_p[i]
+        xmn = lambda arr:(0.5 * (arr + np.roll(arr, +1, axis=xaxis)))
         x_new = x - dx / 2.0
     elif target_xdim == 'x_u':
-        xmn = lambda arr:(0.5 * (arr + np.roll(arr, +1, axis=xaxis)))
+        # Data on x_p will have (f[i] + f[i+1])/2 on x_u[i]
+        xmn = lambda arr:(0.5 * (arr + np.roll(arr, -1, axis=xaxis)))
         x_new = x + dx / 2.0
     else:
         print(f"Cannot transform {xdim} to {target_xdim}")
@@ -169,10 +184,12 @@ def grid_conform_y(field, target_ydim):
     y = field.coords[ydim].data
     dy = y[1] - y[0]
     if target_ydim == 'y_p':
-        ymn = lambda arr:(0.5 * (arr + np.roll(arr, -1, axis=yaxis)))
+        # Data on y_v will have (f[j] + f[j-1])/2 on y_p[j]
+        ymn = lambda arr:(0.5 * (arr + np.roll(arr, +1, axis=yaxis)))
         y_new = y - dy / 2.0
     elif target_ydim == 'y_v':
-        ymn = lambda arr:(0.5 * (arr + np.roll(arr, +1, axis=yaxis)))
+        # Data on y_p will have (f[j] + f[j+1])/2 on y_v[j]
+        ymn = lambda arr:(0.5 * (arr + np.roll(arr, -1, axis=yaxis)))
         y_new = y + dy / 2.0
     else:
         print(f"Cannot transform {ydim} to {target_ydim}")
@@ -184,18 +201,18 @@ def grid_conform_y(field, target_ydim):
     newfield.coords[target_ydim] = y_new
     return newfield
 
-def grid_conform_z(field, z, zn, target_zdim):
+def grid_conform_z(field, z_w, z_p, target_zdim):
     """
     Force field to target x grid by interpolation if necessary.
 
     Parameters
     ----------
     field : xarray
-        Any multi-dimensional xarray with z dimension 'z' or 'zn'.
-    z : xarray coord.
-    zn : xarray coord.
+        Any multi-dimensional xarray with z dimension 'z_w' or 'z_p'.
+    z_w : xarray coord.
+    z_p : xarray coord.
     target_xdim : str
-       Dimension name 'z' or 'z'
+       Dimension name 'z_w' or 'z_p'
 
     Returns
     -------
@@ -212,24 +229,24 @@ def grid_conform_z(field, z, zn, target_zdim):
         return field
     elif target_zdim == 'z_w':
         print(f'{field.name} {zdim} to {target_zdim}')
-        return interpolate(field, z)
+        return interpolate_z(field, z_w)
     elif target_zdim == 'z_p':
         print(f'{field.name} {zdim} to {target_zdim}')
-        return interpolate(field, zn)
+        return interpolate_z(field, z_p)
     else:
         print(f"{field.name}: cannot transform {zdim} to {target_zdim}")
         return field
 
-def grid_conform(field, z, zn, grid: str = 'p' ):
+def grid_conform(field, z_w, z_p, grid: str = 'p' ):
     """
     Force field to target grid by interpolation if necessary.
 
     Parameters
     ----------
     field : xarray
-        Any multi-dimensional xarray with z dimension 'z' or 'zn'.
-    z : xarray coord.
-    zn : xarray coord.
+        Any multi-dimensional xarray with z dimension 'z_w' or 'z_p'.
+    z_w : xarray coord.
+    z_p : xarray coord.
     grid : str | tuple(str)
        grid identifier 'p'| 'u'| 'v'| 'w' or tuple (xdim, ydim, zdim).
 
@@ -249,19 +266,19 @@ def grid_conform(field, z, zn, grid: str = 'p' ):
 
     newfield = grid_conform_x(field, op_grid[0])
     newfield = grid_conform_y(newfield, op_grid[1])
-    newfield = grid_conform_z(newfield, z, zn, op_grid[2])
+    newfield = grid_conform_z(newfield, z_w, z_p, op_grid[2])
     return newfield
 
-def d_by_dx_field(field, z, zn, grid: str = 'p' ) :
+def d_by_dx_field(field, z_w, z_p, grid: str = 'p' ) :
     """
     Differentiate field in x direction.
 
     Parameters
     ----------
         field : xarray nD field
-        z: xarray coordinate
+        z_w: xarray coordinate
             zcoord on w levels - needed if changing vertical grid.
-        zn: xarray coordinate
+        z_p: xarray coordinate
             zcoord on p levels - needed if changing vertical grid.
         grid : str | tuple of 2 strings
             destination grid (Default = 'p')
@@ -278,6 +295,7 @@ def d_by_dx_field(field, z, zn, grid: str = 'p' ) :
     dx = x[1] - x[0]
     if xdim == 'x_u':
         print("d_by_dx_field_on_x_u ", grid)
+        # Data on x_u will have (f[i] - f[i-1])/dx on x_p[i]
         xdim_new = 'x_p'
         xdrv = lambda arr:((arr - np.roll(arr,  1, axis=xaxis)) / dx)
         x_new = x - dx / 2.0
@@ -285,6 +303,7 @@ def d_by_dx_field(field, z, zn, grid: str = 'p' ) :
         if xdim != 'x_p':
             print(f"d_by_dx_field on unknown grid {xdim}, assuming x_p.")
         print("d_by_dx_field_on_x_p ",grid)
+        # Data on x_p will have (f[i+1] - f[i])/dx on x_u[i]
         xdim_new = 'x_u'
         xdrv = lambda arr:((np.roll(arr, -1, axis=xaxis) - arr) / dx)
         x_new = x + dx / 2.0
@@ -292,21 +311,21 @@ def d_by_dx_field(field, z, zn, grid: str = 'p' ) :
     newfield = field.rename({xdim:xdim_new})
     newfield = exec_fn(xdrv, newfield, xaxis)
     newfield.coords[xdim_new] = x_new
-    newfield = grid_conform(newfield, z, zn, grid=grid)
+    newfield = grid_conform(newfield, z_w, z_p, grid=grid)
     newfield.name = f"d{field.name:s}_by_dx_on_{grid:s}"
 
     return newfield
 
-def d_by_dy_field(field, z, zn, grid: str = 'p' ) :
+def d_by_dy_field(field, z_w, z_p, grid: str = 'p' ) :
     """
     Differentiate field in y direction.
 
     Parameters
     ----------
         field : xarray nD field
-        z: xarray coordinate
+        z_w: xarray coordinate
             zcoord on w levels - needed if changing vertical grid.
-        zn: xarray coordinate
+        z_p: xarray coordinate
             zcoord on p levels - needed if changing vertical grid.
         grid : str | tuple of 2 strings
             destination grid (Default = 'p')
@@ -323,6 +342,7 @@ def d_by_dy_field(field, z, zn, grid: str = 'p' ) :
     dy = y[1] - y[0]
     if ydim == 'y_v':
         print("d_by_dy_field_on_y_v ", grid)
+        # Data on y_v will have (f[j] - f[j-1])/dy on y_p[j]
         ydim_new = 'y_p'
         ydrv = lambda arr:((arr - np.roll(arr,  1, axis=yaxis)) / dy)
         y_new = y - dy / 2.0
@@ -330,6 +350,7 @@ def d_by_dy_field(field, z, zn, grid: str = 'p' ) :
         if ydim != 'y_p':
             print(f"d_by_dy_field on unknown grid {ydim}, assuming y_p.")
         print("d_by_dy_field_on_y_p ",grid)
+        # Data on y_p will have (f[j+1] - f[j])/dy on y_v[j]
         ydim_new = 'y_v'
         ydrv = lambda arr:((np.roll(arr, -1, axis=yaxis) - arr) / dy)
         y_new = y + dy / 2.0
@@ -337,21 +358,21 @@ def d_by_dy_field(field, z, zn, grid: str = 'p' ) :
     newfield = field.rename({ydim:ydim_new})
     newfield = exec_fn(ydrv, newfield, yaxis)
     newfield.coords[ydim_new] = y_new
-    newfield = grid_conform(newfield, z, zn, grid=grid)
+    newfield = grid_conform(newfield, z_w, z_p, grid=grid)
     newfield.name = f"d{field.name:s}_by_dy_on_{grid:s}"
 
     return newfield
 
-def d_by_dz_field(field, z, zn, grid: str = 'p'):
+def d_by_dz_field(field, z_w, z_p, grid: str = 'p'):
     """
     Differentiate field in z direction.
 
     Parameters
     ----------
         field : xarray nD field
-        z: xarray coordinate
+        z_w: xarray coordinate
             zcoord on w levels - needed if changing vertical grid.
-        zn: xarray coordinate
+        z_p: xarray coordinate
             zcoord on p levels - needed if changing vertical grid.
         grid : str | tuple of 2 strings
             destination grid (Default = 'p')
@@ -367,13 +388,19 @@ def d_by_dz_field(field, z, zn, grid: str = 'p'):
     zcoord = field.coords[zdim].data
     if zdim == 'z_p':
         print("d_by_dz_field_on_z_p ")
+        # Differences will be at midpoints between z_p points.
+        # These are only z_w points on a uniform grid.
+        # Furthermore, we need additional point at the top.
         zdim_new = 'zi'
         pad = (0,1)
         nroll = -1
         (exn, dexn) = (-1, -1)
     else:
         print("d_by_dz_field_on_z_w ")
-        zdim_new = 'z'
+        # Differences will be at midpoints between z_w points.
+        # These are z_p points even on a uniform grid.
+        # We need additional point at the bottom.
+        zdim_new = 'z_p'
         pad = (1,0)
         nroll = 1
         (exn, dexn) = (0, 1)
@@ -381,10 +408,12 @@ def d_by_dz_field(field, z, zn, grid: str = 'p'):
     newfield = field.diff(zdim)/field.coords[zdim].diff(zdim)
     newfield = newfield.pad(pad_width={zdim:pad}, mode = 'edge')
     newfield = newfield.rename({zdim:zdim_new})
+    
     zi = 0.5 * (zcoord + np.roll(zcoord, nroll))
     zi[exn] = 2 * zi[exn + dexn] - zi[exn + 2 * dexn]
     newfield.coords[zdim_new] = zi
-    newfield = grid_conform(newfield, z, zn, grid=grid)
+    
+    newfield = grid_conform(newfield, z_w, z_p, grid=grid)
     newfield.name = f"d{field.name:s}_by_dz_on_{grid:s}"
 
     return newfield

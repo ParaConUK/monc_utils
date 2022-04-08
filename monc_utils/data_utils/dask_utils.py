@@ -5,13 +5,15 @@ Created on Mon Aug  2 11:33:51 2021
 @author: paclk
 """
 import numpy as np
-import subfilter
+import monc_utils
 from monc_utils.data_utils.string_utils import get_string_index
 
 
 def re_chunk(f, chunks = None, xch = 'all', ych = 'all', zch = 'auto'):
     """
     Wrapper to re-chunk dask array.
+    
+    Provides 'all'  as an option to mean chunk = length of dim.
 
     Parameters
     ----------
@@ -36,7 +38,7 @@ def re_chunk(f, chunks = None, xch = 'all', ych = 'all', zch = 'auto'):
 
     """
 
-    if subfilter.global_config['no_dask']:
+    if monc_utils.global_config['no_dask']:
         return f
 
     #print('*** Using re_chunk ***')
@@ -78,11 +80,24 @@ def re_chunk(f, chunks = None, xch = 'all', ych = 'all', zch = 'auto'):
     return f
 
 def guess_chunk(max_ch, dataset):
+    """
+    Guess a suitable chunk size for spatial dimensions 
 
-    print('*** Using guess_chunk ***')
-    [itime, iix, iiy, iiz] = get_string_index(dataset.dims,
-                                              ['time', 'x', 'y', 'z'])
-    timevar = list(dataset.dims)[itime]
+    Parameters
+    ----------
+    max_ch : TYPE
+        DESCRIPTION.
+    dataset : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    nch : TYPE
+        DESCRIPTION.
+
+    """
+
+    [iix, iiy, iiz] = get_string_index(dataset.dims, ['x', 'y', 'z'])
     xvar = list(dataset.dims)[iix]
     yvar = list(dataset.dims)[iiy]
     zvar = list(dataset.dims)[iiz]

@@ -2,7 +2,7 @@
 """
 Created on Mon Aug  2 12:02:20 2021.
 
-   @author: Peter Clark
+   @author: Peter Clark and Todd Jones
 """
 import time
 import os
@@ -33,7 +33,8 @@ def save_field(dataset, field, write_to_file=True):
     if field.name not in dataset['ds']:
         print(f"Saving {field.name} to {fn}")
         dataset['ds'][field.name] = field
-        encoding = {field.name: {"dtype": monc_utils.global_config['output_precision']} }
+        encoding = {field.name: 
+                    {"dtype": monc_utils.global_config['output_precision']} }
         if write_to_file:
             d = dataset['ds'][field.name].to_netcdf(
                     dataset['file'],
@@ -50,10 +51,9 @@ def save_field(dataset, field, write_to_file=True):
             time.sleep(monc_utils.global_config['write_sleeptime'])
     else:
         print(f"{field.name} already in {fn}")
-#    print(dataset['ds'])
     return dataset['ds'][field.name]
 
-def setup_child_file(source_file, destdir, outtag, options, override=False) :
+def setup_child_file(source_file, destdir, outtag, options=None, override=False) :
     """
     Create NetCDF dataset for derived data in destdir.
 
@@ -84,15 +84,21 @@ def setup_child_file(source_file, destdir, outtag, options, override=False) :
         atts = ds.attrs
     else:
         raise FileNotFoundError(f"Cannot find file {source_file}.")
+        
+    if options == None:
+        options = {}
 
     derived_dataset_name = os.path.basename(source_file)
     derived_dataset_name = ('.').join(derived_dataset_name.split('.')[:-1])
 
-    if monc_utils.global_config['l_slurm_job_tag'] and monc_utils.executing_on_cluster:
+    if monc_utils.global_config['l_slurm_job_tag'] \
+        and monc_utils.executing_on_cluster:
         jn = os.environ['SLURM_JOB_NAME']
-        derived_dataset_name = destdir+derived_dataset_name + "_"+jn+ "_" + outtag + ".nc"
+        derived_dataset_name = destdir+derived_dataset_name \
+            + "_"+jn+ "_" + outtag + ".nc"
     else:
-        derived_dataset_name = destdir+derived_dataset_name + "_" + outtag + ".nc"
+        derived_dataset_name = destdir+derived_dataset_name \
+            + "_" + outtag + ".nc"
 
     exists = os.path.isfile(derived_dataset_name)
 

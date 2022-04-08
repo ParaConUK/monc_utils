@@ -37,8 +37,8 @@ def correct_grid_and_units(var_name: str,
 
     Returns
     -------
-    vard : TYPE
-        DESCRIPTION.
+    vard : xarray
+        Required data with corrected grid.
 
     """
     #   Mapping of data locations on grid via logical triplet:
@@ -76,10 +76,10 @@ def correct_grid_and_units(var_name: str,
             nx = vard.shape[vard.get_axis_num('x')]
 
             if vp[0] :
-                x = (np.arange(nx) + 0.5) * np.float64(dx)
+                x = (np.arange(nx) + 1.0) * np.float64(dx)
                 xn = 'x_u'
             else:
-                x = np.arange(nx) * np.float64(dx)
+                x = (np.arange(nx) + 0.5) * np.float64(dx)
                 xn = 'x_p'
 
             vard = vard.rename({'x':xn})
@@ -88,10 +88,10 @@ def correct_grid_and_units(var_name: str,
         if 'y' in vard.dims:
             ny = vard.shape[vard.get_axis_num('y')]
             if vp[1] :
-                y = (np.arange(ny) + 0.5) * np.float64(dy)
+                y = (np.arange(ny) + 1.0) * np.float64(dy)
                 yn = 'y_v'
             else:
-                y = np.arange(ny) * np.float64(dy)
+                y = (np.arange(ny) + 0.5)* np.float64(dy)
                 yn = 'y_p'
 
             vard = vard.rename({'y':yn})
@@ -120,14 +120,14 @@ def correct_grid_and_units(var_name: str,
 
         if 'x' in vard.dims:
             nx = vard.shape[vard.get_axis_num('x')]
-            x = np.arange(nx) * np.float64(dx)
+            x = (np.arange(nx) + 0.5) * np.float64(dx)
             xn = 'x_p'
             vard = vard.rename({'x':xn})
             vard.coords[xn] = x
 
         if 'y' in vard.dims:
             ny = vard.shape[vard.get_axis_num('y')]
-            y = np.arange(ny) * np.float64(dy)
+            y = (np.arange(ny) + 0.5) * np.float64(dy)
             yn = 'y_p'
             vard = vard.rename({'y':yn})
             vard.coords[yn] = y
@@ -408,8 +408,6 @@ def get_data_on_grid(source_dataset, ref_dataset, var_name,
         elif var_name[-5:-1] == '_on_':
             var_name = var_name[:-5]
             op_var_name = var_name[:-5] + ongrid
-
-#    op_var = { 'name' : op_var_name }
 
     if options is not None and options['save_all'].lower() == 'yes':
 
