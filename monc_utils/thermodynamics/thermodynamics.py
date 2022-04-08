@@ -6,9 +6,9 @@ Peter Clark
 
 import numpy as np
 import xarray as xr
-import subfilter
-import subfilter.utils.difference_ops as do
-import subfilter.thermodynamics.thermodynamics_constants as tc
+import monc_utils
+import monc_utils.data_utils.difference_ops as do
+import monc_utils.thermodynamics.thermodynamics_constants as tc
 
 
 def esat(T):
@@ -1513,7 +1513,7 @@ derived_vars = {
          'func': buoyancy_moist,
          'units': r'm s$^{-2}$'},
     'moist_dbdz':
-        {'vars':('th', 'thref', 'p', 'q_vapour', 'q_cloud_liquid_mass',
+        {'vars':('th', 'thref', 'pref', 'q_vapour', 'q_cloud_liquid_mass',
                  'z', 'zn') ,
           'func': moist_dbdz,
           'units': r's$^{-2}$'},

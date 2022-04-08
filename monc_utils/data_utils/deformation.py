@@ -4,15 +4,15 @@ Created on Mon Aug  2 11:29:37 2021
 @author: Peter Clark
 """
 import numpy as np
-import subfilter
+import monc_utils
 import xarray as xr
 
-import subfilter.utils.difference_ops as do
+import monc_utils.data_utils.difference_ops as do
 
-from subfilter.io.datain import get_data
-from subfilter.io.dataout import save_field
-from subfilter.utils.string_utils import get_string_index
-from subfilter.utils.dask_utils import re_chunk
+from monc_utils.io.datain import get_data
+from monc_utils.io.dataout import save_field
+from monc_utils.data_utils.string_utils import get_string_index
+from monc_utils.data_utils.dask_utils import re_chunk
 
 
 def deformation(source_dataset, ref_dataset, derived_dataset,
@@ -62,7 +62,7 @@ def deformation(source_dataset, ref_dataset, derived_dataset,
 
     sh = np.shape(u)
 
-    max_ch = subfilter.global_config['chunk_size']
+    max_ch = monc_utils.global_config['chunk_size']
 
     nch = int(sh[iix]/(2**int(np.log(sh[iix]*sh[iiy]*sh[iiz]/max_ch)/np.log(2)/2)))
 
@@ -70,81 +70,63 @@ def deformation(source_dataset, ref_dataset, derived_dataset,
 
     u = re_chunk(u, xch=nch, ych=nch, zch = 'all')
 
-    z = source_dataset["z"]
-    zn = source_dataset["zn"]
+    if "z_w" in source_dataset:
+        z_w = source_dataset["z_w"]
+    elif "z" in source_dataset:
+        z_w = source_dataset["z"].rename({'z':'z_w'})
+        
+    if "z_p" in source_dataset:
+        z_p = source_dataset["z_p"]
+    elif "zn" in source_dataset:
+        z_p = source_dataset["zn"].rename({'zn':'z_w'})
 
-    ux = do.d_by_dx_field(u, z, zn, grid = grid )
+    ux = do.d_by_dx_field(u, z_w, z_p, grid = grid )
 
-    uy = do.d_by_dy_field(u, z, zn, grid = grid )
+    uy = do.d_by_dy_field(u, z_w, z_p, grid = grid )
 
-    uz = do.d_by_dz_field(u, z, zn, grid = grid )
+    uz = do.d_by_dz_field(u, z_w, z_p, grid = grid )
 
     u = None # Save some memory
 
     v = get_data(source_dataset, ref_dataset, uvw_names[1], options)
     v = re_chunk(v, xch=nch, ych=nch, zch = 'all')
 
-    vx = do.d_by_dx_field(v, z, zn, grid = grid )
+    vx = do.d_by_dx_field(v, z_w, z_p, grid = grid )
 
-    vy = do.d_by_dy_field(v, z, zn, grid = grid )
+    vy = do.d_by_dy_field(v, z_w, z_p, grid = grid )
 
-    vz = do.d_by_dz_field(v, z, zn, grid = grid )
+    vz = do.d_by_dz_field(v, z_w, z_p, grid = grid )
 
     v = None # Save some memory
 
     w = get_data(source_dataset, ref_dataset, uvw_names[2], options)
     w = re_chunk(w, xch=nch, ych=nch, zch = 'all')
 
-    wx = do.d_by_dx_field(w, z, zn, grid = grid )
+    wx = do.d_by_dx_field(w, z_w, z_p, grid = grid )
 
-    wy = do.d_by_dy_field(w, z, zn, grid = grid )
+    wy = do.d_by_dy_field(w, z_w, z_p, grid = grid )
 
-    wz = do.d_by_dz_field(w, z, zn, grid = grid )
+    wz = do.d_by_dz_field(w, z_w, z_p, grid = grid )
 
     w = None # Save some memory
 
-    if subfilter.global_config['use_concat']:
+    print('Concatenating derivatives')
 
-        print('Concatenating derivatives')
+    t0 = xr.concat([ux, uy, uz], dim='j', coords='minimal',
+                   compat='override')
+    t1 = xr.concat([vx, vy, vz], dim='j', coords='minimal',
+                   compat='override')
+    t2 = xr.concat([wx, wy, wz], dim='j', coords='minimal',
+                   compat='override')
 
-        t0 = xr.concat([ux, uy, uz], dim='j', coords='minimal',
-                       compat='override')
-        print(t0)
-        t1 = xr.concat([vx, vy, vz], dim='j', coords='minimal',
-                       compat='override')
-        print(t1)
-        t2 = xr.concat([wx, wy, wz], dim='j', coords='minimal',
-                       compat='override')
-        print(t2)
+    defm = xr.concat([t0, t1, t2], dim='i')
+    defm.name = 'deformation'
+    defm.attrs={'units':'s-1'}
 
-        defm = xr.concat([t0, t1, t2], dim='i')
+    print(defm)
 
-        defm.name = 'deformation'
-        defm.attrs={'units':'s-1'}
-
-        print(defm)
-
-#        defm = re_chunk(defm, zch = 1)
-
-        if options['save_all'].lower() == 'yes':
-            defm = save_field(derived_dataset, defm)
-
-    else:
-
-        t = [[ux, uy, uz],
-             [vx, vy, vz],
-             [wx, wy, wz],]
-        defm = {}
-        for i, t_i in enumerate(t):
-            for j, u_ij in enumerate(t_i):
-        #        u_ij = u_ij.expand_dims({'i':[i], 'j':[j]})
-                u_ij.name = f'deformation_{i:1d}{j:1d}'
-                if options['save_all'].lower() == 'yes':
-                    u_ij = save_field(derived_dataset, u_ij)
-                defm[f'{i:1d}_{j:1d}']=u_ij
-
-
-    # print(derived_dataset)
+    if options is not None and options['save_all'].lower() == 'yes':
+        defm = save_field(derived_dataset, defm)
 
     return defm
 

@@ -4,7 +4,7 @@ Created on Thu Jan 27 10:52:22 2022
 @author: Peter Clark
 """
 import numpy as np
-import subfilter.thermodynamics.thermodynamics as th
+import monc_utils.thermodynamics.thermodynamics as th
 from scipy.special import erf
 
 def richardson(mod_S_sq, dbdz, minshear = 1E-4):
