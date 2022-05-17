@@ -187,7 +187,6 @@ def get_derived_vars(source_dataset, ref_dataset,
     vard.attrs['units'] = dv['units']
     return vard
 
-
 def get_data(source_dataset, ref_dataset, var_name: str,
              options: dict=None,
              allow_none: bool=False) :
@@ -258,7 +257,7 @@ def get_data(source_dataset, ref_dataset, var_name: str,
         if var_name == 'th' :
             thref = get_thref(ref_dataset,
                               options=options)
-            if len(thref.coords['time']) > 1:
+            if len(thref.coords['time']) > 0:
                 thref = thref.isel(time=0).squeeze(drop=True)
             vard += thref
 
@@ -501,6 +500,8 @@ def get_thref(ref_dataset, options=None):
             thref = 300.0
         else:
             thref = options['th_ref']
+        thref = xarray.DataArray(thref, dims=['time'], coords={'time':[0.0]})
+        
     else:
         thref = ref_dataset['thref']
         [itime] = get_string_index(thref.dims, ['time'])
