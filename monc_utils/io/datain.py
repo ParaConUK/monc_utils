@@ -333,19 +333,19 @@ def get_and_transform(source_dataset, ref_dataset, var_name,
     """
     var = get_data(source_dataset, ref_dataset, var_name, options=options)
     if "z" in source_dataset.dims:
-        z = source_dataset["z"].rename({'z':'z_w'})
+        z_w = source_dataset["z"].rename({'z':'z_w'})
     elif "z_w" in source_dataset.dims:
-        z = source_dataset["z_w"]
+        z_w = source_dataset["z_w"]
     else:
         raise KeyError("Cannot find z in dataset.")
     if "zn" in source_dataset.dims:
-        zn = source_dataset["zn"].rename({'z':'z_p'})
+        z_p = source_dataset["zn"].rename({'zn':'z_p'})
     elif "z_p" in source_dataset.dims:
-        zn = source_dataset["z_p"]
+        z_p = source_dataset["z_p"]
     else:
         raise KeyError("Cannot find zn in dataset.")
 
-    var = do.grid_conform(var, z, zn, grid = grid )
+    var = do.grid_conform(var, z_w, z_p, grid = grid )
 
     # Re-chunk data if using dask
     if not monc_utils.global_config['no_dask']:
