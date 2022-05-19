@@ -9,7 +9,7 @@ import monc_utils
 from monc_utils.data_utils.string_utils import get_string_index
 
 
-def re_chunk(f, chunks = None, xch = 'all', ych = 'all', zch = 'auto'):
+def re_chunk(f, chunks=None, xch='all', ych='all', zch='auto', tch='auto'):
     """
     Wrapper to re-chunk dask array.
     
@@ -30,6 +30,9 @@ def re_chunk(f, chunks = None, xch = 'all', ych = 'all', zch = 'auto'):
     zch :str or int, optional
         New chunking for z dimension. 'all' | 'auto' | int .
         The default is 'all'.
+    tch :str or int, optional
+        New chunking for time dimension. 'all' | 'auto' | int .
+        The default is 'auto'.
 
     Returns
     -------
@@ -41,7 +44,7 @@ def re_chunk(f, chunks = None, xch = 'all', ych = 'all', zch = 'auto'):
     if monc_utils.global_config['no_dask']:
         return f
 
-    #print('*** Using re_chunk ***')
+    print('*** Using re_chunk ***')
 
     defn = 1
 
@@ -50,30 +53,36 @@ def re_chunk(f, chunks = None, xch = 'all', ych = 'all', zch = 'auto'):
         chunks={}
         sh = np.shape(f)
         for ip, dim in enumerate(f.dims):
-            if 'x' in dim:                     # ? if dim.startswith('x') ?
-                                               # ? if dim == 'x' or dim.startswith('x_') ?
+            if dim == 'x' or dim.startswith('x_'):   
                 if xch == 'all':
                     chunks[dim] = sh[ip]
                 elif xch == 'auto':
                     chunks[dim] = 'auto'
                 else:
                     chunks[dim] = np.min([xch, sh[ip]])
-            elif 'y' in dim:
+            elif dim == 'y' or dim.startswith('y_'):
                 if ych == 'all':
                     chunks[dim] = sh[ip]
                 elif ych == 'auto':
                     chunks[dim] = 'auto'
                 else:
                     chunks[dim] = np.min([ych, sh[ip]])
-            elif 'z' in dim:
+            elif dim == 'z' or dim.startswith('z_'):
                 if zch == 'all':
                     chunks[dim] = sh[ip]
                 elif zch == 'auto':
                     chunks[dim] = 'auto'
                 else:
                     chunks[dim] = np.min([zch, sh[ip]])
+            elif dim == 'time' or dim.startswith('time_'):
+                if tch == 'all':
+                    chunks[dim] = sh[ip]
+                elif tch == 'auto':
+                    chunks[dim] = 'auto'
+                else:
+                    chunks[dim] = np.min([tch, sh[ip]])
             else:
-                chunks[f.dims[ip]] = defn       # always 1 for time?
+                chunks[f.dims[ip]] = defn
 
     f = f.chunk(chunks=chunks)
 
