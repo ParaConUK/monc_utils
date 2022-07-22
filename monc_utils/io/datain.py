@@ -139,7 +139,8 @@ def correct_grid_and_units(var_name: str,
             vard = vard.rename({'zn':'z_p'})
 
 
-        vard.attrs['units'] = ''
+        if 'units' not in vard.attrs:        
+            vard.attrs['units'] = ''
 
     return vard
 
@@ -170,24 +171,21 @@ def get_derived_vars(source_dataset, ref_dataset,
     dv = derived_vars[var_name]
     args = []
     for v in dv['vars']:
-        if v == 'piref':
-            pref = get_pref(source_dataset, ref_dataset,
-                                     options=options)
-            args.append(th.exner(pref))
-        elif v == 'pref':
-            pref = get_pref(source_dataset, ref_dataset,
-                                     options=options)
-            args.append(pref)
-        else:
-            var = get_data(source_dataset, ref_dataset, v, options=options,
-                           allow_none=True)
+        allow_none=False
+        if v[0] == '[':
+            allow_none=True
+            v = v[1:-1]
+        var = get_data(source_dataset, ref_dataset, v, options=options,
+                       allow_none=allow_none)
+        if var is not None:
             args.append(var)
+        else:
+            print(f'{v} not in dataset.')
     vard = dv['func'](*args)
     vard.name = var_name
     vard.attrs['units'] = dv['units']
     return vard
-
-
+    
 def get_data(source_dataset, ref_dataset, var_name: str,
              options: dict=None,
              allow_none: bool=False) :
@@ -201,7 +199,7 @@ def get_data(source_dataset, ref_dataset, var_name: str,
     Currently written for MONC data, enforcing C-grid. Returned coords are
     'x_p', 'x_u', 'y_p', 'y_v', 'z_w', 'z_p'. Coordinate x- and -y values are
     retrieved from the MONC options_database in source_dataset
-    or from 'dx' and 'dy' in options otherwise.
+    or from 'dx' and 'dy' in options otherwise. 
 
     Alternative names of variables can be supplied in options['aliases'] as
     a list of strings. If var_name is not found in source_dataset the first
@@ -236,6 +234,7 @@ def get_data(source_dataset, ref_dataset, var_name: str,
     try:
         if var_name in source_dataset:
             vard = source_dataset[var_name]
+
         elif options is not None \
             and 'aliases' in options \
             and var_name in options['aliases']:
@@ -258,19 +257,13 @@ def get_data(source_dataset, ref_dataset, var_name: str,
         if var_name == 'th' :
             thref = get_thref(ref_dataset,
                               options=options)
-            if len(thref.coords['time']) > 1:
-                thref = thref.isel(time=0).squeeze(drop=True)
             vard += thref
 
         if var_name == 'p' :
             pref = get_pref(source_dataset, ref_dataset,
                             options=options)
-            if len(pref.coords['time']) > 1:
-                pref = pref.isel(time=0).squeeze(drop=True)
             vard += pref
 
-        vard = correct_grid_and_units(var_name, vard, source_dataset,
-                                      options=options)
 
     except KeyError:
 
@@ -282,11 +275,9 @@ def get_data(source_dataset, ref_dataset, var_name: str,
             vard = th.exner(get_pref(source_dataset, ref_dataset,
                                      options=options))
         elif var_name == 'z' :
-            z = ref_dataset.dims['z']
-            vard += z #???????????????????
+            vard = ref_dataset.dims['z']
         elif var_name == 'zn' :
-            zn = ref_dataset.dims['zn']
-            vard += zn #??????????????????
+            vard = ref_dataset.dims['zn']
 
         elif var_name in th.derived_vars:
 
@@ -296,9 +287,12 @@ def get_data(source_dataset, ref_dataset, var_name: str,
 
         else :
             if allow_none:
-                vard = None
+                return None
             else:
                 raise KeyError(f"Data {var_name:s} not in dataset.")
+                
+    vard = correct_grid_and_units(var_name, vard, source_dataset,
+                                  options=options)
 
     return vard
 
@@ -463,19 +457,24 @@ def get_pref(source_dataset, ref_dataset,  options=None):
         else:
             thref = options['th_ref']
 
-        zn = source_dataset.variables['zn'][...]
+        zn = source_dataset['zn']
         piref0 = (p_surf/thc.p_ref_theta)**thc.kappa
         piref = piref0 - (thc.g/(thc.cp_air * thref)) * zn
         pref = thc.p_ref_theta * piref**thc.rk
+#        pref = xarray.DataArray(pref, dims=['time'], coords={'time':[0.0]})
+
 #                print('pref', pref)
     else:
         pref = ref_dataset['prefn']
         [itime] = get_string_index(pref.dims, ['time'])
         if itime is not None:
-            pref = pref.rename({pref.dims[itime]: 'time'})
+            tvar = pref.dims[itime]
+            pref = pref.isel({tvar:0}).squeeze(drop=True).drop(tvar)
             # tdim = pref.dims[itime]
             # pref = pref[{tdim:[0]}].squeeze()
             # pref = pref.drop_vars(tdim)
+
+    pref.attrs['units'] = 'Pa'
 
     return pref
 
@@ -501,11 +500,17 @@ def get_thref(ref_dataset, options=None):
             thref = 300.0
         else:
             thref = options['th_ref']
+        thref = xarray.DataArray(thref, dims=['time'], coords={'time':[0.0]})
+        
     else:
         thref = ref_dataset['thref']
         [itime] = get_string_index(thref.dims, ['time'])
         if itime is not None:
-            thref = thref.rename({thref.dims[itime]: 'time'})
+            tvar = thref.dims[itime]
+            thref = thref.isel({tvar:0}).squeeze(drop=True).drop(tvar)
+            
+    thref.attrs['units'] = 'K'
+
             # tdim = thref.dims[itime]
             # thref = thref[{tdim:[0]}].squeeze()
             # thref = thref.drop_vars(tdim)

@@ -1313,8 +1313,10 @@ def moist_dbdz(th, th_ref, p_ref, q_v, q_cl, z, zn, thresh = 1.0e-5):
     b_wet_t.name = 'beta_t_wet'
     b_wet_q.name = 'beta_q_wet'
 
-    b_wet_t = do.grid_conform_z(b_wet_t, z, zn, 'z')
-    b_wet_q = do.grid_conform_z(b_wet_q, z, zn, 'z')
+    b_wet_t = do.interpolate_z(b_wet_t, z)
+    b_wet_q = do.interpolate_z(b_wet_q, z)
+    # b_wet_t = do.grid_conform_z(, z, zn, 'z')
+    # b_wet_q = do.grid_conform_z(b_wet_q, z, zn, 'z')
 
     dbdz = tc.g * ( do.d_by_dz_field(th_L, z, zn, grid= 'w') * b_wet_t
                   + do.d_by_dz_field(qt,   z, zn, grid= 'w') * b_wet_q)
@@ -1497,7 +1499,7 @@ derived_vars = {
          'func': virtual_potential_temperature_monc,
         'units': 'K'},
     'q_total':
-        {'vars': ('q_vapour','q_cloud_liquid_mass','q_ice_mass'),
+        {'vars': ('q_vapour','q_cloud_liquid_mass','[q_ice_mass]'),
          'func': q_total,
          'units': 'kg/kg'},
     'buoyancy':

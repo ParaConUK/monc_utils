@@ -119,7 +119,7 @@ def setup_child_file(source_file, destdir, outtag, options=None, override=False)
         for inc in atts_out:
             if isinstance(atts_out[inc], (dict, bool, type(None))):
                 atts_out[inc] = str(atts_out[inc])
-                print(atts_out[inc])
+                print(f'{inc}: {atts_out[inc]}')
         derived_dataset.attrs = atts_out
 
         derived_dataset.to_netcdf(derived_dataset_name, mode='w')

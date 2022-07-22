@@ -56,13 +56,8 @@
 <section id="detailed-module-contents">
 <h2>Detailed Module Contents<a class="headerlink" href="#detailed-module-contents" title="Permalink to this headline">¶</a></h2>
 <p>The entire module is documented below.</p>
-<span class="target" id="module-monc_utils.io.file_utils"></span><p>Created on Mon Aug  2 11:06:21 2021</p>
-<p>&#64;author: paclk</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="monc_utils.io.file_utils.bytarr_to_dict">
-<span class="sig-prename descclassname"><span class="pre">monc_utils.io.file_utils.</span></span><span class="sig-name descname"><span class="pre">bytarr_to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io.file_utils.bytarr_to_dict" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<span class="target" id="module-monc_utils.io.file_utils"></span><p>Created on Mon Aug  2 11:06:21 2021.</p>
+<p>&#64;author: Peter Clark and Todd Jones</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="monc_utils.io.file_utils.options_database">
 <span class="sig-prename descclassname"><span class="pre">monc_utils.io.file_utils.</span></span><span class="sig-name descname"><span class="pre">options_database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_dataset</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io.file_utils.options_database" title="Permalink to this definition">¶</a></dt>
@@ -80,6 +75,64 @@
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.io.file_utils.path_to_resolution">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.io.file_utils.</span></span><span class="sig-name descname"><span class="pre">path_to_resolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inpath</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io.file_utils.path_to_resolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pull resolution value from an encoded path as a float.</p>
+<p>e.g., ‘BOMEX_m0020_g0800’
+i.e., it should have ‘_m[0-9][0-9][0-9]’ (at least 3 integers)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>inpath</strong> (<em>str</em>) – file path</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>dx</strong> – MONC horizontal resolution [m]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.io.file_utils.configure_model_resolution">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.io.file_utils.</span></span><span class="sig-name descname"><span class="pre">configure_model_resolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io.file_utils.configure_model_resolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find model resolution from available sources.</p>
+<p>This routine applies an order of precedence between potential
+pre-existing records of MONC horizontal resolutions and ensures
+that the options dictionary contains these values.</p>
+<p>Files written via io/dataout.py’s setup_child_file will have
+the correct value listed in the file’s global attributes, as this
+routine is called within that space.</p>
+<p>Repeated calls to this routine (for instance, to simply obtain
+dx and dy) will not modify the options contents.</p>
+<dl class="simple">
+<dt>Precedence:</dt><dd><ol class="arabic simple">
+<li><p>options_database</p></li>
+<li><p>dataset attributes</p></li>
+<li><p>monc_utils options</p></li>
+<li><p>parse file path containing resolution encoding</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<em>xarray dataset</em>) – any monc_utils-compatible dataset</p></li>
+<li><p><strong>options</strong> (<em>dict</em>) – dataset-associated options dictionary</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>dx</strong> (<em>float (expected)</em>) – x-direction MONC resolution [m]</p></li>
+<li><p><strong>dy</strong> (<em>float (expected)</em>) – y-direction MONC resolution [m]</p></li>
+<li><p><strong>options</strong> (<em>dict</em>) – input options dictionary, possibly updated with dx and dy keys</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
 <p>Created on Mon Aug  2 11:21:15 2021</p>
 <p>&#64;author: Peter Clark</p>
 </section>
@@ -92,20 +145,26 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">The file_utils module.</a><ul>
 <li><a class="reference internal" href="#detailed-module-contents">Detailed Module Contents</a></li>
 </ul>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="dataout.html"
-                        title="previous chapter">The dataout module.</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="thermodynamics.html"
-                        title="next chapter">The thermodynamics module.</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="dataout.html"
+                          title="previous chapter">The dataout module.</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="thermodynamics.html"
+                          title="next chapter">The thermodynamics module.</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -149,7 +208,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, 2020, 2021 Peter Clark.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>
 </html>

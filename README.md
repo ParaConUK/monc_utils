@@ -1,10 +1,10 @@
 # monc_utils
 Various utilities for handling data from the MONC large-eddy model.
-See https://readingclouds.github.io/monc_utils/ for documentation.
+See https://paraconuk.github.io/monc_utils/ for documentation.
 
 Users should pip install to a suitable environment using
 
-    pip install  git+https://github.com/ReadingClouds/monc_utils.git
+    pip install  git+https://github.com/ParaConUK/monc_utils.git
 
 This will install into the standard library.
 

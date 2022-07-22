@@ -73,7 +73,7 @@ def exec_fn(fn, field: xarray.DataArray, axis: int) -> xarray.DataArray:
 
 def last_dim(z) :
     """
-    Remove all but last dimension of z.
+    Remove all but last dimension of z. (Deprecated)
 
     Parameters
     ----------
@@ -81,7 +81,8 @@ def last_dim(z) :
 
     Returns
     -------
-        z[0,0, etc. ,:]
+        last dimension of z.
+        
     @author: Peter Clark
     """
     zd = z[...]
@@ -413,8 +414,8 @@ def d_by_dz_field(field, z_w, z_p, grid: str = 'p'):
     zi[exn] = 2 * zi[exn + dexn] - zi[exn + 2 * dexn]
     newfield.coords[zdim_new] = zi
     
-    newfield = grid_conform(newfield, z_w, z_p, grid=grid)
     newfield.name = f"d{field.name:s}_by_dz_on_{grid:s}"
+    newfield = grid_conform(newfield, z_w, z_p, grid=grid)
 
     return newfield
 

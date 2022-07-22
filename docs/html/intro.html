@@ -53,7 +53,7 @@
 These have names; this package follows the following naming convention.</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>Variables or derived variables read from the source or reference file using <a class="reference internal" href="datain.html#monc_utils.io.datain.get_data" title="monc_utils.io.datain.get_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_data()</span></code></a> have the name requested (possibly changed from the internal name in the source data by the aliases dictionary). For example, <code class="docutils literal notranslate"><span class="pre">u</span></code>. They have grid specifications corrected to the appropriate dimensionnspecificatio  in MONC (for example, <code class="docutils literal notranslate"><span class="pre">u</span></code> will be on <code class="docutils literal notranslate"><span class="pre">x_u</span></code>, <code class="docutils literal notranslate"><span class="pre">y_p</span></code> and <code class="docutils literal notranslate"><span class="pre">zn</span></code>) and the time dimension renamed <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p></li>
+<li><p>Variables or derived variables read from the source or reference file using <a class="reference internal" href="datain.html#monc_utils.io.datain.get_data" title="monc_utils.io.datain.get_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_data()</span></code></a> have the name requested (possibly changed from the internal name in the source data by the aliases dictionary). For example, <code class="docutils literal notranslate"><span class="pre">u</span></code>. They have grid specifications corrected to the appropriate dimensionnspecificatio  in MONC (for example, <code class="docutils literal notranslate"><span class="pre">u</span></code> will be on <code class="docutils literal notranslate"><span class="pre">x_u</span></code>, <code class="docutils literal notranslate"><span class="pre">y_p</span></code> and <code class="docutils literal notranslate"><span class="pre">z_p</span></code>) and the time dimension renamed <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p></li>
 <li><p>Variables or derived variables read from the source or reference file using <a class="reference internal" href="datain.html#monc_utils.io.datain.get_and_transform" title="monc_utils.io.datain.get_and_transform"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_and_transform()</span></code></a> behave as above but are then interpolated to the requested grid (<code class="docutils literal notranslate"><span class="pre">u</span></code>, <code class="docutils literal notranslate"><span class="pre">v</span></code>, <code class="docutils literal notranslate"><span class="pre">w</span></code> or <code class="docutils literal notranslate"><span class="pre">p,</span></code> or a tuple made up of x, y and z dimension names) using <a class="reference internal" href="difference_ops.html#monc_utils.data_utils.difference_ops.grid_conform" title="monc_utils.data_utils.difference_ops.grid_conform"><code class="xref py py-func docutils literal notranslate"><span class="pre">grid_conform()</span></code></a>.</p></li>
 <li><p>Variables or derived variables read from the source or reference file using <a class="reference internal" href="datain.html#monc_utils.io.datain.get_data_on_grid" title="monc_utils.io.datain.get_data_on_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_data_on_grid()</span></code></a> behave as above but have the grid name appended to the variable name, e.g. <code class="docutils literal notranslate"><span class="pre">u_on_w</span></code>. If <code class="docutils literal notranslate"><span class="pre">options['save_all']</span></code> is set to <code class="docutils literal notranslate"><span class="pre">'yes'</span></code>, the variable is retrieved from the derived data file if already there and stored to it if not.</p></li>
 </ul>
@@ -62,7 +62,8 @@ These have names; this package follows the following naming convention.</p>
 <section id="input-transforms">
 <h1>Input Transforms<a class="headerlink" href="#input-transforms" title="Permalink to this headline">¶</a></h1>
 <p>Basic variables (<code class="docutils literal notranslate"><span class="pre">'u'</span></code>, <code class="docutils literal notranslate"><span class="pre">'v'</span></code>, <code class="docutils literal notranslate"><span class="pre">'w'</span></code>, <code class="docutils literal notranslate"><span class="pre">'th'</span></code>, <code class="docutils literal notranslate"><span class="pre">'p'</span></code>, <code class="docutils literal notranslate"><span class="pre">'q_vapour'</span></code>, <code class="docutils literal notranslate"><span class="pre">'q_cloud_liquid_mass'</span></code>, <code class="docutils literal notranslate"><span class="pre">'q_cloud_ice_mass'</span></code>) are expected to be available in the input file.
-If MONC is used, the horizontal grid specification is corrected on input to <code class="docutils literal notranslate"><span class="pre">'x_p'</span></code> or <code class="docutils literal notranslate"><span class="pre">'x_u'</span></code>, <code class="docutils literal notranslate"><span class="pre">'y_p'</span></code> or <code class="docutils literal notranslate"><span class="pre">'y_v'</span></code> as appropriate.</p>
+If MONC is used, the horizontal grid specification is corrected on input to <code class="docutils literal notranslate"><span class="pre">'x_p'</span></code> or <code class="docutils literal notranslate"><span class="pre">'x_u'</span></code>, <code class="docutils literal notranslate"><span class="pre">'y_p'</span></code> or <code class="docutils literal notranslate"><span class="pre">'y_v'</span></code> as appropriate.
+Similarly, <code class="docutils literal notranslate"><span class="pre">'z'</span></code> is changed to <code class="docutils literal notranslate"><span class="pre">'z_w'</span></code> and <code class="docutils literal notranslate"><span class="pre">'zn'</span></code> is to <code class="docutils literal notranslate"><span class="pre">'z_p'</span></code>.</p>
 <p>To facilitate use of other models, a list of aliases can be provided under the key ‘aliases’ to translate variable names.</p>
 <p>In order to facilitate comparisons and products, tools have been coded (efficiently but not very elegantly) to transform data from different points on the C-grid. Thus, second order terms can be computed correctly on required points just by specifying the ouput grid.</p>
 <p>A number of derived variables have been implemented that are calculated provided the required inputs are available. These are provided in the <a class="reference internal" href="thermodynamics.html#module-monc_utils.thermodynamics.thermodynamics" title="monc_utils.thermodynamics.thermodynamics"><code class="xref py py-mod docutils literal notranslate"><span class="pre">thermodynamics</span></code></a> module.
@@ -120,20 +121,26 @@ These are used internally but the ability to use them in the input variable list
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Introduction</a></li>
 <li><a class="reference internal" href="#variable-names">Variable Names</a></li>
 <li><a class="reference internal" href="#input-transforms">Input Transforms</a></li>
 <li><a class="reference internal" href="#version-history">Version History</a></li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">Welcome to monc_utils’s documentation!</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="data_utils.html"
-                        title="next chapter">The data_utils sub-package.</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="index.html"
+                          title="previous chapter">Welcome to monc_utils’s documentation!</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="data_utils.html"
+                          title="next chapter">The data_utils sub-package.</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -176,7 +183,7 @@ These are used internally but the ability to use them in the input variable list
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, 2020, 2021 Peter Clark.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>
 </html>
