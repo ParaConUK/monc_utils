@@ -16,6 +16,7 @@ import monc_utils.data_utils.difference_ops as do
 import monc_utils.thermodynamics.thermodynamics as th
 import monc_utils.thermodynamics.thermodynamics_constants as thc
 import monc_utils
+import re
 
 def correct_grid_and_units(var_name: str,
                            vard: xarray.core.dataarray.DataArray,
@@ -45,11 +46,11 @@ def correct_grid_and_units(var_name: str,
     #   logical[u-point,v-point,w-point]
     #          [False,  False,  False  ] --> (p,th,q)-point
     var_properties = {"u":{"grid":[True,False,False],
-                           "units":'m s-1'},
+                           "units":'m.s-1'},
                       "v":{"grid":[False,True,False],
-                           "units":'m s-1'},
+                           "units":'m.s-1'},
                       "w":{"grid":[False,False,True],
-                           "units":'m s-1'},
+                           "units":'m.s-1'},
                       "th":{"grid":[False,False,False],
                             "units":'K'},
                       "p":{"grid":[False,False,False],
@@ -266,7 +267,7 @@ def get_data(source_dataset, ref_dataset, var_name: str,
 
 
     except KeyError:
-
+               
         if var_name == 'thref' :
             vard = get_thref(ref_dataset, options=options)
         elif var_name == 'pref' :
@@ -284,12 +285,44 @@ def get_data(source_dataset, ref_dataset, var_name: str,
             vard = get_derived_vars(source_dataset, ref_dataset,
                                     var_name, th.derived_vars,
                                     options=options)
+            
+        else:
+            
+            deriv = re.compile(r'dbyd[xyz]\(*')
+            mo = deriv.match(var_name)
+            
+            if mo is not None:
+        
+                target_var_name = var_name[mo.end():]
+                if target_var_name[-1] != ')':
+                    raise KeyError(f"Data {var_name:s} not in dataset.")
+                    
+                target_var_name = target_var_name[:-1]
+                
+                target_var = get_data(source_dataset, 
+                                      ref_dataset, 
+                                      target_var_name,
+                                      options=options,
+                                      allow_none=allow_none)
+                if var_name[4] == 'x':
+                    vard = do.d_by_dx_field_native(target_var)
+                elif var_name[4] == 'y':
+                    vard = do.d_by_dy_field_native(target_var)
+                elif var_name[4] == 'z':                    
+                    vard = do.d_by_dz_field_native(target_var )
+                    vard = correct_grid_and_units(var_name, 
+                                                  vard, 
+                                                  source_dataset,
+                                                  options=options)
+                    
+                return vard
+                
 
-        else :
-            if allow_none:
-                return None
-            else:
-                raise KeyError(f"Data {var_name:s} not in dataset.")
+            else :
+                if allow_none:
+                    return None
+                else:
+                    raise KeyError(f"Data {var_name:s} not in dataset.")
                 
     vard = correct_grid_and_units(var_name, vard, source_dataset,
                                   options=options)

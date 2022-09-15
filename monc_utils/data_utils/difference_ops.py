@@ -270,6 +270,48 @@ def grid_conform(field, z_w, z_p, grid: str = 'p' ):
     newfield = grid_conform_z(newfield, z_w, z_p, op_grid[2])
     return newfield
 
+def d_by_dx_field_native(field):
+    """
+    Differentiate field in x direction on native grid.
+
+    Parameters
+    ----------
+        field : xarray nD field
+
+    Returns
+    -------
+        field on native grid
+
+    """
+    [xaxis] = get_string_index(field.dims,['x'])
+    xdim = field.dims[xaxis]
+    x = field.coords[xdim].data
+    dx = x[1] - x[0]
+    if xdim == 'x_u':
+        print(f"d_by_dx_{field.name}_on_x_u ")
+        # Data on x_u will have (f[i] - f[i-1])/dx on x_p[i]
+        xdim_new = 'x_p'
+        xdrv = lambda arr:((arr - np.roll(arr,  1, axis=xaxis)) / dx)
+        x_new = x - dx / 2.0
+    else:
+        if xdim != 'x_p':
+            print(f"d_by_dx_field on unknown grid {xdim}, assuming x_p.")
+        print(f"d_by_dx_{field.name}_on_x_p ")
+        # Data on x_p will have (f[i+1] - f[i])/dx on x_u[i]
+        xdim_new = 'x_u'
+        xdrv = lambda arr:((np.roll(arr, -1, axis=xaxis) - arr) / dx)
+        x_new = x + dx / 2.0
+
+    newfield = field.rename({xdim:xdim_new})
+    newfield = exec_fn(xdrv, newfield, xaxis)
+    newfield.coords[xdim_new] = x_new
+    newfield.name = f"dbydx({field.name:s})"
+    if 'units' in field.attrs:
+        newfield.attrs['units'] = field.attrs['units'] + '.m-1'
+        
+    return newfield
+
+
 def d_by_dx_field(field, z_w, z_p, grid: str = 'p' ) :
     """
     Differentiate field in x direction.
@@ -290,32 +332,52 @@ def d_by_dx_field(field, z_w, z_p, grid: str = 'p' ) :
 
     @author: Peter Clark
     """
-    [xaxis] = get_string_index(field.dims,['x'])
-    xdim = field.dims[xaxis]
-    x = field.coords[xdim].data
-    dx = x[1] - x[0]
-    if xdim == 'x_u':
-        print("d_by_dx_field_on_x_u ", grid)
-        # Data on x_u will have (f[i] - f[i-1])/dx on x_p[i]
-        xdim_new = 'x_p'
-        xdrv = lambda arr:((arr - np.roll(arr,  1, axis=xaxis)) / dx)
-        x_new = x - dx / 2.0
-    else:
-        if xdim != 'x_p':
-            print(f"d_by_dx_field on unknown grid {xdim}, assuming x_p.")
-        print("d_by_dx_field_on_x_p ",grid)
-        # Data on x_p will have (f[i+1] - f[i])/dx on x_u[i]
-        xdim_new = 'x_u'
-        xdrv = lambda arr:((np.roll(arr, -1, axis=xaxis) - arr) / dx)
-        x_new = x + dx / 2.0
-
-    newfield = field.rename({xdim:xdim_new})
-    newfield = exec_fn(xdrv, newfield, xaxis)
-    newfield.coords[xdim_new] = x_new
+    newfield = d_by_dx_field_native(field)
     newfield = grid_conform(newfield, z_w, z_p, grid=grid)
-    newfield.name = f"d{field.name:s}_by_dx_on_{grid:s}"
+    newfield.name = f"dbydx({field.name:s})_on_{grid:s}"
 
     return newfield
+
+def d_by_dy_field_native(field):
+    """
+    Differentiate field in y direction on native grid.
+
+    Parameters
+    ----------
+        field : xarray nD field
+
+    Returns
+    -------
+        field on native grid
+
+    """
+    [yaxis] = get_string_index(field.dims,['y'])
+    ydim = field.dims[yaxis]
+    y = field.coords[ydim].data
+    dy = y[1] - y[0]
+    if ydim == 'y_v':
+        print(f"d_by_dy_{field.name}_on_y_v ")
+        # Data on y_v will have (f[j] - f[j-1])/dy on y_p[j]
+        ydim_new = 'y_p'
+        ydrv = lambda arr:((arr - np.roll(arr,  1, axis=yaxis)) / dy)
+        y_new = y - dy / 2.0
+    else:
+        if ydim != 'y_p':
+            print(f"d_by_dy_field on unknown grid {ydim}, assuming y_p.")
+        print(f"d_by_dy_{field.name}_on_y_p ")
+        # Data on y_p will have (f[j+1] - f[j])/dy on y_v[j]
+        ydim_new = 'y_v'
+        ydrv = lambda arr:((np.roll(arr, -1, axis=yaxis) - arr) / dy)
+        y_new = y + dy / 2.0
+
+    newfield = field.rename({ydim:ydim_new})
+    newfield = exec_fn(ydrv, newfield, yaxis)
+    newfield.coords[ydim_new] = y_new
+    newfield.name = f"dbydy({field.name:s})"
+    if 'units' in field.attrs:
+        newfield.attrs['units'] = field.attrs['units'] + '.m-1'
+
+    return newfield   
 
 def d_by_dy_field(field, z_w, z_p, grid: str = 'p' ) :
     """
@@ -337,30 +399,65 @@ def d_by_dy_field(field, z_w, z_p, grid: str = 'p' ) :
 
     @author: Peter Clark
     """
-    [yaxis] = get_string_index(field.dims,['y'])
-    ydim = field.dims[yaxis]
-    y = field.coords[ydim].data
-    dy = y[1] - y[0]
-    if ydim == 'y_v':
-        print("d_by_dy_field_on_y_v ", grid)
-        # Data on y_v will have (f[j] - f[j-1])/dy on y_p[j]
-        ydim_new = 'y_p'
-        ydrv = lambda arr:((arr - np.roll(arr,  1, axis=yaxis)) / dy)
-        y_new = y - dy / 2.0
-    else:
-        if ydim != 'y_p':
-            print(f"d_by_dy_field on unknown grid {ydim}, assuming y_p.")
-        print("d_by_dy_field_on_y_p ",grid)
-        # Data on y_p will have (f[j+1] - f[j])/dy on y_v[j]
-        ydim_new = 'y_v'
-        ydrv = lambda arr:((np.roll(arr, -1, axis=yaxis) - arr) / dy)
-        y_new = y + dy / 2.0
-
-    newfield = field.rename({ydim:ydim_new})
-    newfield = exec_fn(ydrv, newfield, yaxis)
-    newfield.coords[ydim_new] = y_new
+    newfield = d_by_dy_field_native(field)
     newfield = grid_conform(newfield, z_w, z_p, grid=grid)
-    newfield.name = f"d{field.name:s}_by_dy_on_{grid:s}"
+    newfield.name = f"dbydy({field.name:s})_on_{grid:s}"
+
+    return newfield
+
+def d_by_dz_field_native(field):
+    """
+    Differentiate field in z direction on native grid.
+
+    Parameters
+    ----------
+        field : xarray nD field
+
+    Returns
+    -------
+        field on native grid
+
+    """
+    [zaxis] = get_string_index(field.dims,['z'])
+    zdim = field.dims[zaxis]
+    zcoord = field.coords[zdim].data
+    if zdim == 'z_p' or zdim == 'zn' :
+        print(f"d_by_dz_{field.name}_on_z_p ")
+        # Differences will be at midpoints between z_p points.
+        # These are only z_w points on a uniform grid.
+        # Furthermore, we need additional point at the top.
+        zdim_new = 'zi'
+        pad = (0,1)
+        nroll = -1
+        (exn, dexn) = (-1, -1)
+        
+    elif zdim == 'z' :
+        print(f"d_by_dz_{field.name}_on_z ")
+        zdim_new = 'zn'
+        pad = (1,0)
+        nroll = 1
+        (exn, dexn) = (0, 1)
+        
+    else:
+        print(f"d_by_dz_{field.name}_on_z_w ")
+        # Differences will be at midpoints between z_w points.
+        # These are z_p points even on a uniform grid.
+        # We need additional point at the bottom.
+        zdim_new = 'z_p'
+        pad = (1,0)
+        nroll = 1
+        (exn, dexn) = (0, 1)
+
+    newfield = field.diff(zdim)/field.coords[zdim].diff(zdim)
+    newfield = newfield.pad(pad_width={zdim:pad}, mode = 'edge')
+    newfield = newfield.rename({zdim:zdim_new})
+    
+    zi = 0.5 * (zcoord + np.roll(zcoord, nroll))
+    zi[exn] = 2 * zi[exn + dexn] - zi[exn + 2 * dexn]
+    newfield.coords[zdim_new] = zi
+    newfield.name = f"dbydz({field.name:s})"
+    if 'units' in field.attrs:
+        newfield.attrs['units'] = field.attrs['units'] + '.m-1'
 
     return newfield
 
@@ -384,38 +481,10 @@ def d_by_dz_field(field, z_w, z_p, grid: str = 'p'):
 
     @author: Peter Clark
     """
-    [zaxis] = get_string_index(field.dims,['z'])
-    zdim = field.dims[zaxis]
-    zcoord = field.coords[zdim].data
-    if zdim == 'z_p':
-        print("d_by_dz_field_on_z_p ")
-        # Differences will be at midpoints between z_p points.
-        # These are only z_w points on a uniform grid.
-        # Furthermore, we need additional point at the top.
-        zdim_new = 'zi'
-        pad = (0,1)
-        nroll = -1
-        (exn, dexn) = (-1, -1)
-    else:
-        print("d_by_dz_field_on_z_w ")
-        # Differences will be at midpoints between z_w points.
-        # These are z_p points even on a uniform grid.
-        # We need additional point at the bottom.
-        zdim_new = 'z_p'
-        pad = (1,0)
-        nroll = 1
-        (exn, dexn) = (0, 1)
 
-    newfield = field.diff(zdim)/field.coords[zdim].diff(zdim)
-    newfield = newfield.pad(pad_width={zdim:pad}, mode = 'edge')
-    newfield = newfield.rename({zdim:zdim_new})
-    
-    zi = 0.5 * (zcoord + np.roll(zcoord, nroll))
-    zi[exn] = 2 * zi[exn + dexn] - zi[exn + 2 * dexn]
-    newfield.coords[zdim_new] = zi
-    
-    newfield.name = f"d{field.name:s}_by_dz_on_{grid:s}"
+    newfield = d_by_dz_field_native(field)
     newfield = grid_conform(newfield, z_w, z_p, grid=grid)
+    newfield.name = f"d{field.name:s}_by_dz_on_{grid:s}"
 
     return newfield
 

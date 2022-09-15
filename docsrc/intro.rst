@@ -42,18 +42,23 @@ Examples are:
 |           |where the mean is the domain mean.                             |
 +-----------+---------------------------------------------------------------+
 
+Spatial derivatives can be specified e.g. ``'dbydx(th)'``.
+Multiple (nested) derivatives are allowed, e.g. ``'dbydy(dbydx(th))'``.
+These are read in using :py:func:`~monc_utils.io.datain.get_data` and computed on a native grid, but may be conformed to a requuired grid as per any other variable using :py:func:`~monc_utils.io.datain.get_data_on_grid`.
+The derivatives are calculated using :py:mod:`~monc_utils.data_utils.difference_ops` module that now has general, grid-aware derivative and averaging functions.
 
 .. todo:: Code to calculate the deformation field and hence shear and vorticity has also been implemented but needs full integration.
-
-.. todo:: The next step is to implement arbitrary derivatives, so one could specify in the variable list, e.g. ``'d_u_d_x_on_w'``. This has been implemented in the trajectory code and will be ported to here for compatibility.
-    The :py:mod:`~monc_utils.data_utils.difference_ops` module now has general, grid-aware derivative and averaging functions. 
-    These are used internally but the ability to use them in the input variable list has yet to be implemented, apart from some special variables like buoyancy gradient.
 
 ===============
 Version History
 ===============
 
-Latest version is 0.1.0
+Latest version is 0.2.0
+
+.. topic:: New at 0.2
+
+    #. Specify spatial derivatives of variables at input.
+
 
 .. topic:: New at 0.1
 
