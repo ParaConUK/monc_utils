@@ -1,17 +1,18 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Introduction &#8212; monc_utils 0.2.0 documentation</title>
+    <title>Introduction &#8212; monc_utils 0.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -33,7 +34,7 @@
         <li class="right" >
           <a href="index.html" title="Welcome to monc_utils’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.3.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Introduction</a></li> 
       </ul>
     </div>  
@@ -44,11 +45,11 @@
           <div class="body" role="main">
             
   <section id="introduction">
-<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h1>
 <p>The purpose of this set of modules is to implement a set of useful utilities for dealing with output from MONC (and similar data).</p>
 </section>
 <section id="variable-names">
-<h1>Variable Names<a class="headerlink" href="#variable-names" title="Permalink to this headline">¶</a></h1>
+<h1>Variable Names<a class="headerlink" href="#variable-names" title="Permalink to this heading">¶</a></h1>
 <p>This package uses xarray - returned variables are xarray DataArrays.
 These have names; this package follows the following naming convention.</p>
 <blockquote>
@@ -60,7 +61,7 @@ These have names; this package follows the following naming convention.</p>
 </div></blockquote>
 </section>
 <section id="input-transforms">
-<h1>Input Transforms<a class="headerlink" href="#input-transforms" title="Permalink to this headline">¶</a></h1>
+<h1>Input Transforms<a class="headerlink" href="#input-transforms" title="Permalink to this heading">¶</a></h1>
 <p>Basic variables (<code class="docutils literal notranslate"><span class="pre">'u'</span></code>, <code class="docutils literal notranslate"><span class="pre">'v'</span></code>, <code class="docutils literal notranslate"><span class="pre">'w'</span></code>, <code class="docutils literal notranslate"><span class="pre">'th'</span></code>, <code class="docutils literal notranslate"><span class="pre">'p'</span></code>, <code class="docutils literal notranslate"><span class="pre">'q_vapour'</span></code>, <code class="docutils literal notranslate"><span class="pre">'q_cloud_liquid_mass'</span></code>, <code class="docutils literal notranslate"><span class="pre">'q_cloud_ice_mass'</span></code>) are expected to be available in the input file.
 If MONC is used, the horizontal grid specification is corrected on input to <code class="docutils literal notranslate"><span class="pre">'x_p'</span></code> or <code class="docutils literal notranslate"><span class="pre">'x_u'</span></code>, <code class="docutils literal notranslate"><span class="pre">'y_p'</span></code> or <code class="docutils literal notranslate"><span class="pre">'y_v'</span></code> as appropriate.
 Similarly, <code class="docutils literal notranslate"><span class="pre">'z'</span></code> is changed to <code class="docutils literal notranslate"><span class="pre">'z_w'</span></code> and <code class="docutils literal notranslate"><span class="pre">'zn'</span></code> is to <code class="docutils literal notranslate"><span class="pre">'z_p'</span></code>.</p>
@@ -69,10 +70,6 @@ Similarly, <code class="docutils literal notranslate"><span class="pre">'z'</spa
 <p>A number of derived variables have been implemented that are calculated provided the required inputs are available. These are provided in the <a class="reference internal" href="thermodynamics.html#module-monc_utils.thermodynamics.thermodynamics" title="monc_utils.thermodynamics.thermodynamics"><code class="xref py py-mod docutils literal notranslate"><span class="pre">thermodynamics</span></code></a> module.
 Examples are:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 15%" />
-<col style="width: 85%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p>‘th_L’</p></td>
 <td><p>Liquid water potential temperature  <img class="math" src="_images/math/5aedef230ab5aab17c013808b691bfe393cec831.png" alt="\theta_L"/>.</p></td>
@@ -102,20 +99,20 @@ The derivatives are calculated using <a class="reference internal" href="differe
 </div>
 </section>
 <section id="version-history">
-<h1>Version History<a class="headerlink" href="#version-history" title="Permalink to this headline">¶</a></h1>
+<h1>Version History<a class="headerlink" href="#version-history" title="Permalink to this heading">¶</a></h1>
 <p>Latest version is 0.2.0</p>
-<div class="topic">
+<aside class="topic">
 <p class="topic-title">New at 0.2</p>
 <ol class="arabic simple">
 <li><p>Specify spatial derivatives of variables at input.</p></li>
 </ol>
-</div>
-<div class="topic">
+</aside>
+<aside class="topic">
 <p class="topic-title">New at 0.1</p>
 <ol class="arabic simple">
 <li><p>Complete re-structuring. Extracted from Subfilter repository.</p></li>
 </ol>
-</div>
+</aside>
 </section>
 
 
@@ -161,7 +158,7 @@ The derivatives are calculated using <a class="reference internal" href="differe
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -181,13 +178,13 @@ The derivatives are calculated using <a class="reference internal" href="differe
         <li class="right" >
           <a href="index.html" title="Welcome to monc_utils’s documentation!"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.3.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Introduction</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, 2020, 2021 Peter Clark.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>
 </html>

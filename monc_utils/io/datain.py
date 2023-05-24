@@ -310,10 +310,11 @@ def get_data(source_dataset, ref_dataset, var_name: str,
                     vard = do.d_by_dy_field_native(target_var)
                 elif var_name[4] == 'z':                    
                     vard = do.d_by_dz_field_native(target_var )
-                    vard = correct_grid_and_units(var_name, 
-                                                  vard, 
-                                                  source_dataset,
-                                                  options=options)
+
+                vard = correct_grid_and_units(var_name, 
+                                              vard, 
+                                              source_dataset,
+                                              options=options)
                     
                 return vard
                 
@@ -503,10 +504,7 @@ def get_pref(source_dataset, ref_dataset,  options=None):
         if itime is not None:
             tvar = pref.dims[itime]
             pref = pref.isel({tvar:0}).squeeze(drop=True).drop(tvar)
-            # tdim = pref.dims[itime]
-            # pref = pref[{tdim:[0]}].squeeze()
-            # pref = pref.drop_vars(tdim)
-
+            
     pref.attrs['units'] = 'Pa'
 
     return pref
@@ -543,9 +541,5 @@ def get_thref(ref_dataset, options=None):
             thref = thref.isel({tvar:0}).squeeze(drop=True).drop(tvar)
             
     thref.attrs['units'] = 'K'
-
-            # tdim = thref.dims[itime]
-            # thref = thref[{tdim:[0]}].squeeze()
-            # thref = thref.drop_vars(tdim)
 
     return thref
