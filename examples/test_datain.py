@@ -26,10 +26,13 @@ dask.config.set({"array.slicing.split_large_chunks": True})
 
 test_case = 0
 
+# onedrive = '"C:/Users/paclk/OneDrive - University of Reading/"
+onedrive = "C:/Users/xm904103/OneDrive - University of Reading/"
+
 if test_case == 0:
     config_file = 'config_test_case_0.yaml'
-    indir = 'C:/Users/paclk/OneDrive - University of Reading/ug_project_data/Data/'
-    odir = 'C:/Users/paclk/OneDrive - University of Reading/ug_project_data/Data/'
+    indir = onedrive+'ug_project_data/Data/'
+    odir = onedrive+'ug_project_data/Data/'
 #    file = 'diagnostics_3d_ts_21600.nc'
 #    ref_file = 'diagnostics_ts_21600.nc'
     file = 'diagnostics_3d_ts_23400.nc'
@@ -43,9 +46,9 @@ if test_case == 0:
 elif test_case == 1:
     config_file = 'config_test_case_1.yaml'
     #indir = '/storage/silver/wxproc/xm904103/'
-    indir = 'C:/Users/paclk/OneDrive - University of Reading/traj_data/CBL/'
+    indir = onedrive+'traj_data/CBL/'
+    odir = onedrive+'traj_data/CBL/'
     #odir = '/storage/silver/wxproc/xm904103/'
-    odir = 'C:/Users/paclk/OneDrive - University of Reading/traj_data/CBL/'
     file = 'diagnostics_3d_ts_13200.nc'
     ref_file = None
 
@@ -60,8 +63,8 @@ options['aliases'] = {
 options['save_all'] = 'no'
 odir = odir + 'test_datain/'
 
-#dir = 'C:/Users/paclk/OneDrive - University of Reading/Git/python/monc_utils/test_data/BOMEX/'
-#odir = 'C:/Users/paclk/OneDrive - University of Reading/Git/python/monc_utils/test_data/BOMEX/'
+#dir = onedrive+'Git/python/monc_utils/test_data/BOMEX/'
+#odir = onedrive+'Git/python/monc_utils/test_data/BOMEX/'
 
 os.makedirs(odir, exist_ok = True)
 
@@ -120,11 +123,16 @@ var_list = [
     # "v",
     # "w",
     # "th",
+    # "th_v",
+    # "th_L",
+    # "th_w",
+    # "th_s",
+    "th_sw",
     # "p",
     # "dbydx(p)",
     # "dbydy(p)",
     # "dbydz(p)",
-    "dbydz(th_L)",
+    # "dbydz(th_L)",
     ]
 
 fname = 'test_datain'

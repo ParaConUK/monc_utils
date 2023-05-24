@@ -1,17 +1,18 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>The deformation module. &#8212; monc_utils 0.2.0 documentation</title>
+    <title>The deformation module. &#8212; monc_utils 0.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -33,7 +34,7 @@
         <li class="right" >
           <a href="cloud_monc.html" title="The cloud_monc module."
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.3.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="data_utils.html" accesskey="U">The data_utils sub-package.</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">The deformation module.</a></li> 
       </ul>
@@ -45,16 +46,16 @@
           <div class="body" role="main">
             
   <section id="the-deformation-module">
-<h1>The deformation module.<a class="headerlink" href="#the-deformation-module" title="Permalink to this headline">¶</a></h1>
+<h1>The deformation module.<a class="headerlink" href="#the-deformation-module" title="Permalink to this heading">¶</a></h1>
 <p>This module implements functions to calculate the deformation tensor for data on a C-grid.</p>
-<div class="topic">
+<aside class="topic">
 <p class="topic-title">New at 0.1</p>
 <ol class="arabic simple">
 <li><p>Relocated to <a class="reference internal" href="difference_ops.html#module-monc_utils.data_utils" title="monc_utils.data_utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">monc_utils.data_utils</span></code></a>.</p></li>
 </ol>
-</div>
+</aside>
 <section id="detailed-module-contents">
-<h2>Detailed Module Contents<a class="headerlink" href="#detailed-module-contents" title="Permalink to this headline">¶</a></h2>
+<h2>Detailed Module Contents<a class="headerlink" href="#detailed-module-contents" title="Permalink to this heading">¶</a></h2>
 <p>The entire module is documented below.</p>
 <span class="target" id="module-monc_utils.data_utils.deformation"></span><p>Created on Mon Aug  2 11:29:37 2021</p>
 <p>&#64;author: Peter Clark</p>
@@ -64,7 +65,7 @@
 <dd><p>Compute deformation tensor.</p>
 <p>Deformation tensor is defined as <img class="math" src="_images/math/b5ebb297b2a3b9599e1525b370a0f0fb29c2dcaa.png" alt="{\partial u_{i}}/{\partial {x_j}}"/>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>source_dataset</strong> (<em>NetCDF dataset</em>) – Inout data.</p></li>
 <li><p><strong>ref_dataset</strong> (<em>NetCDF dataset</em>) – Input data for input containing reference
@@ -76,11 +77,11 @@ profiles. Can be None</p></li>
 Required to be in this order, otherwise we can change to 3 parameters?</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Array with new dimensions ‘i’ and ‘j’.
 Saves to derived_dataset if options[‘save_all’].lower() == ‘yes’.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>xarray</p>
 </dd>
 </dl>
@@ -95,13 +96,13 @@ Saves to derived_dataset if options[‘save_all’].lower() == ‘yes’.</p>
 <img class="math" src="_images/math/5ca68e885fc4d6ad9917ebbbc09a96ed74a30e1e.png" alt="S_{ij}={\partial u_{i}}/{\partial {x_j}}
 +{\partial u_{j}}/{\partial {x_i}}"/>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>d</strong> (<em>xarray</em>) – Deformation tensor with dimensions ‘i’ and ‘j’.</p></li>
 <li><p><strong>no_trace</strong> (<em>bool</em><em>, </em><em>optional</em>) – If true, subtract trace (divergence). The default is True.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>S</strong> (<em>xarray</em>) – Shear with new dimension ‘i_j’.</p></li>
 <li><p><strong>mod_S_sq</strong> (<em>xarray</em>) – Modulus of shear squared. <img class="math" src="_images/math/562ed184d01cfbee83dbdc7ffa65522d55ea7588.png" alt="1/2 S_{ij}S_{ij}"/></p></li>
@@ -120,13 +121,13 @@ Saves to derived_dataset if options[‘save_all’].lower() == ‘yes’.</p>
 -{\partial u_{j}}/{\partial {x_i}})"/>
 with <img class="math" src="_images/math/bc41ce7420b85b5a386d8e604895fa9ffcb489d1.png" alt="kij"/> defined cyclically (i.e. 123, 231, 312).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>d</strong> (<em>xarray</em>) – Deformation tensor with dimensions ‘i’ and ‘j’.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>vorticity</strong> – Vorticity with dimension ‘i’.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>xarray</p>
 </dd>
 </dl>
@@ -178,7 +179,7 @@ with <img class="math" src="_images/math/bc41ce7420b85b5a386d8e604895fa9ffcb489d
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -198,14 +199,14 @@ with <img class="math" src="_images/math/bc41ce7420b85b5a386d8e604895fa9ffcb489d
         <li class="right" >
           <a href="cloud_monc.html" title="The cloud_monc module."
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.3.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="data_utils.html" >The data_utils sub-package.</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">The deformation module.</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, 2020, 2021 Peter Clark.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>
 </html>

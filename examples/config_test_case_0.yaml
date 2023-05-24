@@ -1,0 +1,14 @@
+options:
+    dx: 50.0
+    dy: 50.0
+
+filters:
+    filter_name: gaussian
+#    filter_name: running_mean
+#    filter_name: wave_cutoff
+#    filter_name: circular_wave_cutoff
+    sigma_list: [500.0, 220.0, 50.0]
+
+
+
+

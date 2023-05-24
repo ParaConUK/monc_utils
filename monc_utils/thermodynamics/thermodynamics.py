@@ -27,10 +27,10 @@ def esat(T):
         res: numpy array or xarray DataArray
             Vapour pressure over water (Pa)
     """
-    T_ref=tc.freeze_pt
-    T_ref2=243.04-T_ref # Bolton uses 243.5
-    es_Tref=610.94      # Bolton uses 611.2
-    const=17.625        # Bolton uses 17.67
+    T_ref = tc.freeze_pt
+    T_ref2 = 243.04-T_ref # Bolton uses 243.5
+    es_Tref = 610.94      # Bolton uses 611.2
+    const = 17.625        # Bolton uses 17.67
     res = es_Tref * np.exp(const * (T - T_ref)/(T+T_ref2))
 
     if type(res) is xr.core.dataarray.DataArray:
@@ -80,21 +80,17 @@ def inv_esat(es):
         T: numpy array or xarray DataArray
             Temperature (K)
     """
-    T_ref=tc.freeze_pt
-    T_ref2=243.04-T_ref
+    T_ref = tc.freeze_pt
+    T_ref2 = 243.04-T_ref
+    const = 17.625        # Bolton uses 17.67
+    es_Tref = 610.94      # Bolton uses 611.2
 #
 # This is how constants are derived:
-#    es_Tref=610.94
-#    const=17.625
-#    ln_es_Tref = np.log(es_Tref)
-#    C1 = const * T_ref - ln_es_Tref * T_ref2
-#    C2 = const + ln_es_Tref
-#
-    ln_es_Tref = 6.41499875468
-    C1 = 5007.4243625
-    C2 = 24.039998754
-    ln_es =  np.log(es) / ln_es_Tref
-    T = (T_ref2 * ln_es +  C1) / (C2 - ln_es)
+#     C1 = const * T_ref
+    C1 = 4814.268749999999
+    
+    ln_es =  np.log(es / es_Tref)
+    T = (T_ref2 * ln_es +  C1) / (const - ln_es)
     return T
 
 def inv_esat_ice(es):
@@ -114,22 +110,18 @@ def inv_esat_ice(es):
         T: numpy array or xarray DataArray
             Temperature (K)
     """
-#    T_ref=tc.tc.triple_pt
-    T_ref2=-7.66
+    T_ref=tc.triple_pt
+    T_ref2= -7.66
+    es_Tref=610.87
+    const= 21.8745584
 #
 # This is how constants are derived:
-#    es_Tref = 610.87
-#    const = 21.8745584
-#    ln_es_Tref = np.log(es_Tref)
-#    C1 = const * T_ref - ln_es_Tref * T_ref2
-#    C2 = const + ln_es_Tref
-#
-    ln_es_Tref = 6.4148841705762614
-    C1 = 6024.3923852906155
-    C2 = 28.289442570576263
+    # C1 = const * T_ref
+    C1 = 5975.254372544001
 
-    ln_es =  np.log(es) / ln_es_Tref
-    T = (T_ref2 * ln_es +  C1) / (C2 - ln_es)
+    ln_es =  np.log(es / es_Tref)
+    T = (T_ref2 * ln_es +  C1) / (const - ln_es)
+
     return T
 
 def esat_over_Tkappa(T):
@@ -437,6 +429,33 @@ def t_lcl_rh(T, RH):
         tlcl.name = 't_lcl_rh'
     return tlcl
 
+def p_lcl(Tp, pp, T_lcl):
+    """
+    Pressure at lifting condensation level.
+
+    Parameters
+    ----------
+        Tp: numpy array or xarray DataArray
+            Parcel Temperature (K).
+        pp: numpy array or xarray DataArray
+            Parcel pressure (Pa).
+        T_lcl: numpy array or xarray DataArray
+            Temperature at lifting condensation level.
+
+    Returns
+    -------
+        p_lcl: numpy array or xarray DataArray
+             : Pressure at lifting condensation level.
+    """
+            
+    
+    p_LCL = pp * (T_lcl / Tp) ** tc.rk
+    
+    if type(p_LCL) is xr.core.dataarray.DataArray:
+       p_LCL.name = 'p_lcl'
+    return p_LCL
+    
+    
 def latheat(T, sublim=0, model=0, focwil_T=None) :
     """
     Latent heat of condensation or sublimation.
@@ -709,6 +728,98 @@ def wet_bulb_potential_temperature(T, p, q):
     if type(th_W) is xr.core.dataarray.DataArray:
         th_W.name = 'th_w'
     return th_W
+
+def sat_wet_bulb_potential_temperature(T, p):
+    """
+    Saturated wet-bulb potential temperature.
+
+    Derived variable name: th_s
+
+    From Davies-Jones 2007
+
+    Parameters
+    ----------
+    T : numpy array or xarray DataArray
+        Temperature. (K)
+    p : numpy array or xarray DataArray
+        Pressure (Pa).
+
+    Returns
+    -------
+    theta_w: numpy array or xarray DataArray
+        Wet-bulb potential temperature (K) numpy array or xarray DataArray
+    """
+    
+    q = qsat(T, p)
+    th_S = wet_bulb_potential_temperature(T, p, q)
+    if type(th_S) is xr.core.dataarray.DataArray:
+        th_S.name = 'th_s'
+    return th_S
+    
+def sat_unsat_wet_bulb_potential_temperature(T, p, q, 
+                                             Tp=None, TDp=None, pp=None,
+                                             sl = None):
+    """
+    Saturated/unsaturated wet-bulb potential temperature.
+
+    Derived variable name: th_sw
+
+    From Davies-Jones 2007
+
+    Parameters
+    ----------
+    T : numpy array or xarray DataArray
+        Temperature. (K)
+    p : numpy array or xarray DataArray
+        Pressure (Pa).
+    q: numpy array or xarray DataArray
+        specific humidity (kg/kg)
+    Tp: numpy array or xarray DataArray
+        Parcel Temperature. (K) Default=None    
+    TDp:numpy array or xarray DataArray
+        Parcel Dewppoint Temperature. (K) Default=None    
+    pp:numpy array or xarray DataArray
+        Parcel pressure. (Pa) Default=None    
+    sl: slice object.
+        Used to select levels for mean for parcel properties.
+        default=None which gives sice(1,3,None)
+    If parcel properties are None, the sl levels are averaged.
+
+
+    Returns
+    -------
+    theta_sw: numpy array or xarray DataArray
+        Wet-bulb potential temperature below LCL, saturated wet-bulb PT above
+        (K) numpy array or xarray DataArray
+    """
+
+    th_S = sat_wet_bulb_potential_temperature(T, p)
+    
+    th_W = wet_bulb_potential_temperature(T, p, q)
+    
+    if sl is None: sl = slice(1, 3, None)
+    
+    if Tp is None: Tp = T.isel(z_p=sl).mean('z_p')
+        
+    if pp is None: pp = p.isel(z_p=sl).mean('z_p')
+
+    if TDp is None: TDp =  dewpoint(Tp, pp, q.isel(z_p=sl).mean('z_p'))
+    
+    T_LCL = t_lcl_td(Tp, TDp)
+    
+    p_LCL = p_lcl(Tp, pp, T_LCL)
+    
+    print(p_LCL.max(('x_p','y_p')).values)
+    
+    if type(th_S) is xr.core.dataarray.DataArray:
+        th_SW = xr.where(p <= p_LCL, th_S, th_W)
+        th_SW.name = 'th_sw'
+    else:
+        th_SW = th_S.copy()
+        p_gt_p_lcl = p>p_LCL
+        th_SW[p_gt_p_lcl] = th_W[p_gt_p_lcl]
+         
+    return  th_SW  
 
 def wet_bulb_temperature(T, p, q):
     """
@@ -1481,6 +1592,14 @@ derived_vars = {
     'th_w':
         {'vars': ('T', 'p', 'q_vapour'),
          'func': wet_bulb_potential_temperature,
+         'units': 'K'},
+    'th_s':
+        {'vars': ('T', 'p'),
+         'func': sat_wet_bulb_potential_temperature,
+         'units': 'K'},
+    'th_sw':
+        {'vars': ('T', 'p', 'q_vapour'),
+         'func': sat_unsat_wet_bulb_potential_temperature,
          'units': 'K'},
     'th_e':
         {'vars': ('T', 'p', 'q_vapour'),
