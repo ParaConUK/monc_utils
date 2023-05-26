@@ -2,6 +2,8 @@
 Various utilities for handling data from the MONC large-eddy model.
 See https://paraconuk.github.io/monc_utils/ for documentation.
 
+See the [changelog](CHANGELOG.md) for a summary of changes.
+
 Users should pip install to a suitable environment using
 
     pip install  git+https://github.com/ParaConUK/monc_utils.git
