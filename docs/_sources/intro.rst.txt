@@ -53,12 +53,18 @@ The derivatives are calculated using :py:mod:`~monc_utils.data_utils.difference_
 Version History
 ===============
 
-Latest version is 0.2.0
+Latest version is 0.3.0
+
+.. topic:: New at 0.3.0
+
+	#. Corrections to inv_esat and inv_esat_ice
+	#. Addition of 
+		- saturated_wet_bulb_potential_temperature
+		- saturated_unsaturated_wet_bulb_potential_temperature
 
 .. topic:: New at 0.2
 
     #. Specify spatial derivatives of variables at input.
-
 
 .. topic:: New at 0.1
 

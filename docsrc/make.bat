@@ -8,8 +8,8 @@ if "%SPHINXBUILD%" == "" (
 	set SPHINXBUILD=sphinx-build
 )
 set SOURCEDIR=.
-REM set BUILDDIR=_build
-set BUILDDIR=../docs
+set BUILDDIR=_build
+REM set BUILDDIR=../docs
 
 if "%1" == "" goto help
 
@@ -40,7 +40,7 @@ goto end
 %SPHINXBUILD% -M html %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%
 popd
 
-xcopy /Y /E ..\docs\html ..\docs 
+xcopy /Y /E _build\html ..\docs 
 
 pushd   
 
