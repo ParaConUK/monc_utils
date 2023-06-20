@@ -1,0 +1,436 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>The difference_ops module. &#8212; monc_utils 0.3.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="The cloud_monc module." href="cloud_monc.html" />
+    <link rel="prev" title="The data_utils sub-package." href="data_utils.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cloud_monc.html" title="The cloud_monc module."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="data_utils.html" title="The data_utils sub-package."
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.3.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="data_utils.html" accesskey="U">The data_utils sub-package.</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">The difference_ops module.</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="the-difference-ops-module">
+<h1>The difference_ops module.<a class="headerlink" href="#the-difference-ops-module" title="Permalink to this heading">¶</a></h1>
+<p>This module implements averaging and differencing functions for data on a C-grid.</p>
+<aside class="topic">
+<p class="topic-title">New at 0.2</p>
+<ol class="arabic simple">
+<li><p>Specify spatial derivatives of variables at input. Derivatives are split into the <a class="reference internal" href="#monc_utils.data_utils.difference_ops.d_by_dx_field" title="monc_utils.data_utils.difference_ops.d_by_dx_field"><code class="xref py py-func docutils literal notranslate"><span class="pre">d_by_dx_field()</span></code></a> and <a class="reference internal" href="#monc_utils.data_utils.difference_ops.d_by_dx_field_native" title="monc_utils.data_utils.difference_ops.d_by_dx_field_native"><code class="xref py py-func docutils literal notranslate"><span class="pre">d_by_dx_field_native()</span></code></a> (and similarly for y, z) . The latter just perform a centred difference and update the grid specification for that dimension (so, for example, a derivative of a field on <code class="docutils literal notranslate"><span class="pre">x_u</span></code> points will be on <code class="docutils literal notranslate"><span class="pre">x_p</span></code> points. The former calls the latter then intterpolates to the required output grid.</p></li>
+</ol>
+</aside>
+<aside class="topic">
+<p class="topic-title">New at 0.1</p>
+<ol class="arabic simple">
+<li><p>Relocated to <a class="reference internal" href="#module-monc_utils.data_utils" title="monc_utils.data_utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">monc_utils.data_utils</span></code></a>.</p></li>
+</ol>
+</aside>
+<section id="detailed-module-contents">
+<h2>Detailed Module Contents<a class="headerlink" href="#detailed-module-contents" title="Permalink to this heading">¶</a></h2>
+<p>The entire module is documented below.</p>
+<span class="target" id="module-monc_utils.data_utils.difference_ops"></span><p>difference_ops.py.</p>
+<p>Created on Wed Apr 17 21:03:43 2019</p>
+<p>Difference operators for C-grid data.</p>
+<dl>
+<dt>Note: written for MONC grid:</dt><dd><p>v[i  ,j  ,k] – +            – v[i+1 ,j  ,k] –+
+|               |               |               |
+|               |               |               |</p>
+</dd>
+<dt>– p[i  ,j  ,k] – u[i  ,j  ,k] – p[i+1,j  ,k] – u[i+1,j,k]</dt><dd><div class="line-block">
+<div class="line">|               |               |</div>
+<div class="line">|               |               |</div>
+</div>
+</dd>
+</dl>
+<p>The 0th point is a p point. We have decided this is at dx/2, dy/2</p>
+<p>roll(f, +1) shifts data right, so is equivalent to f[i-1] (or j-1).</p>
+<p>&#64;author: Peter Clark</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.data_utils.difference_ops.exec_fn">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.data_utils.difference_ops.</span></span><span class="sig-name descname"><span class="pre">exec_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataArray</span></span></span><a class="headerlink" href="#monc_utils.data_utils.difference_ops.exec_fn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute function using map_overlap with overlap on selected axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fn</strong> (<em>function</em>) – DESCRIPTION.</p></li>
+<li><p><strong>field</strong> (<em>xarray.DataArray</em>) – DESCRIPTION.</p></li>
+<li><p><strong>axis</strong> (<em>int</em>) – DESCRIPTION.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>new xarray.DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.data_utils.difference_ops.last_dim">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.data_utils.difference_ops.</span></span><span class="sig-name descname"><span class="pre">last_dim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.data_utils.difference_ops.last_dim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all but last dimension of z. (Deprecated)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>z</strong> (<em>n-dimensional array.</em>) – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>last dimension of z.</p>
+</dd>
+</dl>
+<p>&#64;author: Peter Clark</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.data_utils.difference_ops.interpolate_z">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.data_utils.difference_ops.</span></span><span class="sig-name descname"><span class="pre">interpolate_z</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">znew</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.data_utils.difference_ops.interpolate_z" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpolate field znew.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field</strong> (<em>xarray nD field</em>) – </p></li>
+<li><p><strong>znew</strong> (<em>xarray coordinate new z.</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>field on znew levels</p>
+</dd>
+</dl>
+<p>&#64;author: Peter Clark</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.data_utils.difference_ops.grid_conform_x">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.data_utils.difference_ops.</span></span><span class="sig-name descname"><span class="pre">grid_conform_x</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_xdim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.data_utils.difference_ops.grid_conform_x" title="Permalink to this definition">¶</a></dt>
+<dd><p>Force field to target x grid by averaging if necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field</strong> (<em>xarray</em>) – Any multi-dimensional xarray with x dimension ‘x_u’ or ‘x_p’. Any other
+x dimensionm treated as ‘x_p’.</p></li>
+<li><p><strong>target_xdim</strong> (<em>str</em>) – Dimension name ‘x_u’ or ‘x_p’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>field on target x grid.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.data_utils.difference_ops.grid_conform_y">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.data_utils.difference_ops.</span></span><span class="sig-name descname"><span class="pre">grid_conform_y</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_ydim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.data_utils.difference_ops.grid_conform_y" title="Permalink to this definition">¶</a></dt>
+<dd><p>Force field to target y grid by averaging if necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field</strong> (<em>xarray</em>) – Any multi-dimensional xarray with y dimension ‘y_v’ or ‘y_p’. Any other
+y dimensionm treated as ‘y_p’.</p></li>
+<li><p><strong>target_xdim</strong> (<em>str</em>) – Dimension name ‘y_v’ or ‘y_p’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>field on target y grid.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.data_utils.difference_ops.grid_conform_z">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.data_utils.difference_ops.</span></span><span class="sig-name descname"><span class="pre">grid_conform_z</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_zdim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.data_utils.difference_ops.grid_conform_z" title="Permalink to this definition">¶</a></dt>
+<dd><p>Force field to target x grid by interpolation if necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field</strong> (<em>xarray</em>) – Any multi-dimensional xarray with z dimension ‘z_w’ or ‘z_p’.</p></li>
+<li><p><strong>z_w</strong> (<em>xarray coord.</em>) – </p></li>
+<li><p><strong>z_p</strong> (<em>xarray coord.</em>) – </p></li>
+<li><p><strong>target_xdim</strong> (<em>str</em>) – Dimension name ‘z_w’ or ‘z_p’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>field on target x grid.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.data_utils.difference_ops.grid_conform">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.data_utils.difference_ops.</span></span><span class="sig-name descname"><span class="pre">grid_conform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'p'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.data_utils.difference_ops.grid_conform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Force field to target grid by interpolation if necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field</strong> (<em>xarray</em>) – Any multi-dimensional xarray with z dimension ‘z_w’ or ‘z_p’.</p></li>
+<li><p><strong>z_w</strong> (<em>xarray coord.</em>) – </p></li>
+<li><p><strong>z_p</strong> (<em>xarray coord.</em>) – </p></li>
+<li><p><strong>grid</strong> (<em>str</em><em> | </em><em>tuple</em><em>(</em><em>str</em><em>)</em>) – grid identifier ‘p’| ‘u’| ‘v’| ‘w’ or tuple (xdim, ydim, zdim).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>field on target grid.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.data_utils.difference_ops.d_by_dx_field_native">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.data_utils.difference_ops.</span></span><span class="sig-name descname"><span class="pre">d_by_dx_field_native</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.data_utils.difference_ops.d_by_dx_field_native" title="Permalink to this definition">¶</a></dt>
+<dd><p>Differentiate field in x direction on native grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>field</strong> (<em>xarray nD field</em>) – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>field on native grid</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.data_utils.difference_ops.d_by_dx_field">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.data_utils.difference_ops.</span></span><span class="sig-name descname"><span class="pre">d_by_dx_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'p'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.data_utils.difference_ops.d_by_dx_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Differentiate field in x direction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field</strong> (<em>xarray nD field</em>) – </p></li>
+<li><p><strong>z_w</strong> (<em>xarray coordinate</em>) – zcoord on w levels - needed if changing vertical grid.</p></li>
+<li><p><strong>z_p</strong> (<em>xarray coordinate</em>) – zcoord on p levels - needed if changing vertical grid.</p></li>
+<li><p><strong>grid</strong> (<em>str</em><em> | </em><em>tuple of 2 strings</em>) – destination grid (Default = ‘p’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>field on required grid</p>
+</dd>
+</dl>
+<p>&#64;author: Peter Clark</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.data_utils.difference_ops.d_by_dy_field_native">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.data_utils.difference_ops.</span></span><span class="sig-name descname"><span class="pre">d_by_dy_field_native</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.data_utils.difference_ops.d_by_dy_field_native" title="Permalink to this definition">¶</a></dt>
+<dd><p>Differentiate field in y direction on native grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>field</strong> (<em>xarray nD field</em>) – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>field on native grid</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.data_utils.difference_ops.d_by_dy_field">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.data_utils.difference_ops.</span></span><span class="sig-name descname"><span class="pre">d_by_dy_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'p'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.data_utils.difference_ops.d_by_dy_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Differentiate field in y direction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field</strong> (<em>xarray nD field</em>) – </p></li>
+<li><p><strong>z_w</strong> (<em>xarray coordinate</em>) – zcoord on w levels - needed if changing vertical grid.</p></li>
+<li><p><strong>z_p</strong> (<em>xarray coordinate</em>) – zcoord on p levels - needed if changing vertical grid.</p></li>
+<li><p><strong>grid</strong> (<em>str</em><em> | </em><em>tuple of 2 strings</em>) – destination grid (Default = ‘p’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>field on required grid</p>
+</dd>
+</dl>
+<p>&#64;author: Peter Clark</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.data_utils.difference_ops.d_by_dz_field_native">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.data_utils.difference_ops.</span></span><span class="sig-name descname"><span class="pre">d_by_dz_field_native</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.data_utils.difference_ops.d_by_dz_field_native" title="Permalink to this definition">¶</a></dt>
+<dd><p>Differentiate field in z direction on native grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>field</strong> (<em>xarray nD field</em>) – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>field on native grid</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.data_utils.difference_ops.d_by_dz_field">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.data_utils.difference_ops.</span></span><span class="sig-name descname"><span class="pre">d_by_dz_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'p'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.data_utils.difference_ops.d_by_dz_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Differentiate field in z direction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field</strong> (<em>xarray nD field</em>) – </p></li>
+<li><p><strong>z_w</strong> (<em>xarray coordinate</em>) – zcoord on w levels - needed if changing vertical grid.</p></li>
+<li><p><strong>z_p</strong> (<em>xarray coordinate</em>) – zcoord on p levels - needed if changing vertical grid.</p></li>
+<li><p><strong>grid</strong> (<em>str</em><em> | </em><em>tuple of 2 strings</em>) – destination grid (Default = ‘p’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>field on required grid</p>
+</dd>
+</dl>
+<p>&#64;author: Peter Clark</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.data_utils.difference_ops.padleft">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.data_utils.difference_ops.</span></span><span class="sig-name descname"><span class="pre">padleft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.data_utils.difference_ops.padleft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add dummy field at bottom of nD array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> (<em>nD field</em>) – </p></li>
+<li><p><strong>zt</strong> (<em>1D zcoordinates</em>) – </p></li>
+<li><p><strong>axis=0</strong> (<em>Specify axis to extend</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>extended field, extended coord</p>
+</dd>
+</dl>
+<p>&#64;author: Peter Clark</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.data_utils.difference_ops.padright">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.data_utils.difference_ops.</span></span><span class="sig-name descname"><span class="pre">padright</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.data_utils.difference_ops.padright" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add dummy field at top of nD array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> (<em>nD field</em>) – </p></li>
+<li><p><strong>zt</strong> (<em>1D zcoordinates</em>) – </p></li>
+<li><p><strong>axis=0</strong> (<em>Specify axis to extend</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>extended field, extended coord</p>
+</dd>
+</dl>
+<p>&#64;author: Peter Clark</p>
+</dd></dl>
+
+<span class="target" id="module-monc_utils.data_utils"></span></section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">The difference_ops module.</a><ul>
+<li><a class="reference internal" href="#detailed-module-contents">Detailed Module Contents</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="data_utils.html"
+                          title="previous chapter">The data_utils sub-package.</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="cloud_monc.html"
+                          title="next chapter">The cloud_monc module.</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/difference_ops.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cloud_monc.html" title="The cloud_monc module."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="data_utils.html" title="The data_utils sub-package."
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.3.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="data_utils.html" >The data_utils sub-package.</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">The difference_ops module.</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, 2020, 2021 Peter Clark.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+    </div>
+  </body>
+</html>

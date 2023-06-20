@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>The dataout module. &#8212; monc_utils 0.3.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="The file_utils module." href="file_utils.html" />
+    <link rel="prev" title="The datain module." href="datain.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="file_utils.html" title="The file_utils module."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="datain.html" title="The datain module."
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.3.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="io.html" accesskey="U">The io sub-package.</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">The dataout module.</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="the-dataout-module">
+<h1>The dataout module.<a class="headerlink" href="#the-dataout-module" title="Permalink to this heading">¶</a></h1>
+<p>This module implements functions to perform various output tasks for <code class="xref py py-mod docutils literal notranslate"><span class="pre">monc_utils</span></code>.</p>
+<aside class="topic">
+<p class="topic-title">New at 0.1</p>
+<ol class="arabic simple">
+<li><p>Relocated to <a class="reference internal" href="datain.html#module-monc_utils.io" title="monc_utils.io"><code class="xref py py-mod docutils literal notranslate"><span class="pre">monc_utils.io</span></code></a>.</p></li>
+</ol>
+</aside>
+<section id="detailed-module-contents">
+<h2>Detailed Module Contents<a class="headerlink" href="#detailed-module-contents" title="Permalink to this heading">¶</a></h2>
+<p>The entire module is documented below.</p>
+<span class="target" id="module-monc_utils.io.dataout"></span><p>Created on Mon Aug  2 12:02:20 2021.</p>
+<blockquote>
+<div><p>&#64;author: Peter Clark and Todd Jones</p>
+</div></blockquote>
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.io.dataout.save_field">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.io.dataout.</span></span><span class="sig-name descname"><span class="pre">save_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_to_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io.dataout.save_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save dask-chunked xarray field to xarray Dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<em>xarray Dataset</em>) – Output dataset.</p></li>
+<li><p><strong>field</strong> (<em>dask-chunked xarray</em>) – Input field.</p></li>
+<li><p><strong>write_to_file</strong> (<em>bool</em><em>, </em><em>optional</em>) – DESCRIPTION. The default is True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.io.dataout.setup_child_file">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.io.dataout.</span></span><span class="sig-name descname"><span class="pre">setup_child_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outtag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">override</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io.dataout.setup_child_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create NetCDF dataset for derived data in destdir.</p>
+<p>File name is original file name concatenated with filter_def.id.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source_file</strong> (<em>str</em>) – Input NetCDF file name.</p></li>
+<li><p><strong>destdir</strong> (<em>str</em>) – Output directory.</p></li>
+<li><p><strong>options</strong> (<em>dict</em>) – Options dictionary</p></li>
+<li><p><strong>override=False</strong> (<em>bool</em>) – if True force creation of file</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul>
+<li><p><strong>do</strong> (<em>dict</em>) – {<strong>‘file’</strong>: derived_dataset_name (str) - file name,</p>
+<p><strong>’ds’</strong>: derived_dataset (xarray Dataset) - NetCDF dataset for derived data}</p>
+</li>
+<li><p><strong>exists</strong> (<em>bool</em>) – True when input <strong>source_file</strong> already existed and was not overwritten</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Created on Mon Aug  2 11:21:15 2021</p>
+<p>&#64;author: Peter Clark</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">The dataout module.</a><ul>
+<li><a class="reference internal" href="#detailed-module-contents">Detailed Module Contents</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="datain.html"
+                          title="previous chapter">The datain module.</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="file_utils.html"
+                          title="next chapter">The file_utils module.</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/dataout.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="file_utils.html" title="The file_utils module."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="datain.html" title="The datain module."
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.3.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="io.html" >The io sub-package.</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">The dataout module.</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, 2020, 2021 Peter Clark.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+    </div>
+  </body>
+</html>

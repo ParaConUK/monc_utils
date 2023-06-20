@@ -1,0 +1,1134 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>The thermodynamics module. &#8212; monc_utils 0.3.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="The file_utils module." href="file_utils.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="file_utils.html" title="The file_utils module."
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">The thermodynamics module.</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="the-thermodynamics-module">
+<h1>The thermodynamics module.<a class="headerlink" href="#the-thermodynamics-module" title="Permalink to this heading">¶</a></h1>
+<p>This module implements thermodynamics functions for <code class="xref py py-mod docutils literal notranslate"><span class="pre">monc_utils</span></code>.</p>
+<p>Note: Functions can be used to provide derived variables
+where <code class="docutils literal notranslate"><span class="pre">Derived</span> <span class="pre">variable</span> <span class="pre">name:</span></code> is defined.</p>
+<aside class="topic">
+<p class="topic-title">New in version 0.3.0</p>
+<ol class="arabic simple">
+<li><p>Corrections to inv_esat and inv_esat_ice</p></li>
+<li><dl class="simple">
+<dt>Addition of</dt><dd><ul class="simple">
+<li><p>saturated_wet_bulb_potential_temperature</p></li>
+<li><p>saturated_unsaturated_wet_bulb_potential_temperature</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ol>
+</aside>
+<aside class="topic">
+<p class="topic-title">New in version 0.1</p>
+<ol class="arabic simple">
+<li><p>Relocated to <a class="reference internal" href="#module-monc_utils.thermodynamics" title="monc_utils.thermodynamics"><code class="xref py py-mod docutils literal notranslate"><span class="pre">monc_utils.thermodynamics</span></code></a>.</p></li>
+</ol>
+</aside>
+<section id="detailed-module-contents">
+<h2>Detailed Module Contents<a class="headerlink" href="#detailed-module-contents" title="Permalink to this heading">¶</a></h2>
+<p>The entire module is documented below.</p>
+<span class="target" id="module-monc_utils.thermodynamics.thermodynamics"></span><p>General Thermodynamics functions.</p>
+<p>Peter Clark</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.esat">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">esat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.esat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saturation Vapour Pressure over Water.</p>
+<p>Derived variable name: esat</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature (K)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>res</strong> – Vapour pressure over water (Pa)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.esat_ice">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">esat_ice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.esat_ice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saturation Vapour Pressure over Ice.</p>
+<p>Derived variable name: esat_ice</p>
+<p>Magnus Teten,
+Murray (1967)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray.</em>) – Temperature (K)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>res</strong> – Vapour pressure over ice(Pa)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.inv_esat">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">inv_esat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">es</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.inv_esat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Temperature for given Saturation Vapour Pressure over Water.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>es</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Vapour pressure over water (Pa)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>T</strong> – Temperature (K)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.inv_esat_ice">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">inv_esat_ice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">es</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.inv_esat_ice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Temperature for given Saturation Vapour Pressure over Water.</p>
+<p>Magnus Teten,
+Murray (1967)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>es</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Vapour pressure over water (Pa)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>T</strong> – Temperature (K)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.esat_over_Tkappa">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">esat_over_Tkappa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.esat_over_Tkappa" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes <img class="math" src="_images/math/9199b2465b3ecd2612f5d132e794031ef4eb629b.png" alt="e_s/T^{(1/kappa)}"/> (es in Pa).</p>
+<p>From Bolton 1980.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature (K)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>res</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.exner">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">exner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.exner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Exner Pressure.</p>
+<p>Derived variable name: exner</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>p_exner</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.inv_exner">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">inv_exner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.inv_exner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute 1/(Exner Pressure).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>inv_p_exner</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.temperature">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Potential Temperature.</p>
+<p>Derived variable name: T</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Potential temperature of dry air (K),</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>T</strong> – Temperature (K).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.potential_temperature">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">potential_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.potential_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Potential Temperature.</p>
+<p>Derived variable name: th</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature (K).</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>theta</strong> – Potential temperature of dry air (K),</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.moist_potential_temperature">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">moist_potential_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.moist_potential_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Moist Potential Temperature.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature (K).</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+<li><p><strong>m</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Mixing ratio(kg/kg).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>theta</strong> – Potential temperature of moist air (K) .</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.q_to_mix">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">q_to_mix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.q_to_mix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert specific humidity to mixing ratio.</p>
+<p>Derived variable name: m_x where input is q_x</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>q</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Specific humidity (kg/kg).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>m</strong> – Mixing Ratio(kg/kg)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.mix_to_q">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">mix_to_q</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.mix_to_q" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert mixing ratio to specific humidity.</p>
+<p>Derived variable name: q_x where input is m_x</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>m</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Mixing Ratio(kg/kg)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>q</strong> – Specific humidity (kg/kg).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.q_p_to_e">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">q_p_to_e</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.q_p_to_e" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert specific humidity and pressure to vapour pressure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>q</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Specific humidity (kg/kg)</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Total Pressure (Pa)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>e</strong> – Vapour pressure (Pa)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.e_p_to_q">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">e_p_to_q</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.e_p_to_q" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert vapour pressure and total pressure to specific humidity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>e</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Vapour pressure (Pa)</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>q</strong> – Specific humidity (kg/kg)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.t_lcl_td">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">t_lcl_td</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TD</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.t_lcl_td" title="Permalink to this definition">¶</a></dt>
+<dd><p>T at lifting condensation level from Dewpoint.</p>
+<p>Derived variable name: t_lcl_td</p>
+<p>From Bolton 1980</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature (K).</p></li>
+<li><p><strong>TD</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Dew point Temperature (K).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Tlcl</strong> – temperature at lifting condensation level (K)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.t_lcl_e">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">t_lcl_e</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.t_lcl_e" title="Permalink to this definition">¶</a></dt>
+<dd><p>T at lifting condensation level from vapour presssure.</p>
+<p>Derived variable name: t_lcl_e</p>
+<p>From Bolton 1980</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature (K).</p></li>
+<li><p><strong>e</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Vapour pressure (Pa).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Tlcl</strong> – temperature at lifting condensation level (K)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.t_lcl_rh">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">t_lcl_rh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RH</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.t_lcl_rh" title="Permalink to this definition">¶</a></dt>
+<dd><p>T at lifting condensation level from RH.</p>
+<p>Derived variable name: t_lcl_rh</p>
+<p>From Bolton 1980</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature (K).</p></li>
+<li><p><strong>RH</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Relative humidity (%)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Tlcl</strong> – temperature at lifting condensation level (K)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.p_lcl">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">p_lcl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_lcl</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.p_lcl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pressure at lifting condensation level.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Tp</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Parcel Temperature (K).</p></li>
+<li><p><strong>pp</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Parcel pressure (Pa).</p></li>
+<li><p><strong>T_lcl</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature at lifting condensation level.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>p_lcl</strong> – : Pressure at lifting condensation level.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.latheat">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">latheat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sublim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">focwil_T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.latheat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Latent heat of condensation or sublimation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature (K).</p></li>
+<li><p><strong>sublim</strong> (<em>int</em><em> (</em><em>optional</em><em>)</em>) – = 1 return Latent heat of sublimation</p></li>
+<li><p><strong>Model</strong> (<em>int</em><em> (</em><em>optional</em><em>)</em>) – = 1 use UM fixed values</p></li>
+<li><p><strong>focwil_T</strong> (<em>float</em><em> (</em><em>optional</em><em>)</em>) – use linear ramp in ice fraction from
+focwil_T to freezing.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>latheat</strong> – Latent heat of condensation(K)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.dewpoint">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">dewpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.dewpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dewpoint.</p>
+<p>Derived variable name: T_dew</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature.</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+<li><p><strong>q</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific humidity (kg/kg)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>TD</strong> – Dew-point temperature (K).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Nnmpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.qsat">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">qsat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.qsat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saturation vapour pressure.</p>
+<p>Derived variable name: qsat</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature. (K)</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>qs</strong> – Saturation specific humidity (kg/kg) over water.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.dqsatbydT">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">dqsatbydT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.dqsatbydT" title="Permalink to this definition">¶</a></dt>
+<dd><p><img class="math" src="_images/math/b30f1a75e524a1ea4ab22c1a7ada87f4d67b2cbd.png" alt="{alpha= dq_{s}}/{dT}"/>.</p>
+<p>Derived variable name: alpha</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature. (K)</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>alpha</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.equiv_potential_temperature_approx">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">equiv_potential_temperature_approx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.equiv_potential_temperature_approx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Equivalent potential temperature.</p>
+<p>From Bolton 1980</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature. (K)</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+<li><p><strong>q</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific humidity (kg/kg)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>theta_e</strong> – Fast estimate of equivalent potential temperature (K).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.equiv_potential_temperature">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">equiv_potential_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.equiv_potential_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Equivalent potential temperature.</p>
+<p>Derived variable name: th_e</p>
+<p>From Bolton 1980</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature. (K)</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+<li><p><strong>q</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific humidity (kg/kg)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>theta_e</strong> – Accurate estimate of equivalent potential temperature (K).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.wet_bulb_potential_temperature">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">wet_bulb_potential_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.wet_bulb_potential_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wet-bulb potential temperature.</p>
+<p>Derived variable name: th_w</p>
+<p>From Davies-Jones 2007</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature. (K)</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+<li><p><strong>q</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific humidity (kg/kg)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>theta_w</strong> – Wet-bulb potential temperature (K) numpy array or xarray DataArray</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.sat_wet_bulb_potential_temperature">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">sat_wet_bulb_potential_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.sat_wet_bulb_potential_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saturated wet-bulb potential temperature.</p>
+<p>Derived variable name: th_s</p>
+<p>From Davies-Jones 2007</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature. (K)</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>theta_w</strong> – Wet-bulb potential temperature (K) numpy array or xarray DataArray</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.sat_unsat_wet_bulb_potential_temperature">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">sat_unsat_wet_bulb_potential_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TDp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.sat_unsat_wet_bulb_potential_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saturated/unsaturated wet-bulb potential temperature.</p>
+<p>Derived variable name: th_sw</p>
+<p>From Davies-Jones 2007</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature. (K)</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+<li><p><strong>q</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific humidity (kg/kg)</p></li>
+<li><p><strong>Tp</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Parcel Temperature. (K) Default=None</p></li>
+<li><p><strong>TDp</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Parcel Dewppoint Temperature. (K) Default=None</p></li>
+<li><p><strong>pp</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Parcel pressure. (Pa) Default=None</p></li>
+<li><p><strong>sl</strong> (<em>slice object.</em>) – Used to select levels for mean for parcel properties.
+default=None which gives sice(1,3,None)</p></li>
+<li><p><strong>None</strong> (<em>If parcel properties are</em>) – </p></li>
+<li><p><strong>averaged.</strong> (<em>the sl levels are</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>theta_sw</strong> – Wet-bulb potential temperature below LCL, saturated wet-bulb PT above
+(K) numpy array or xarray DataArray</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.wet_bulb_temperature">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">wet_bulb_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.wet_bulb_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wet-bulb temperature.</p>
+<p>Derived variable name: T_w</p>
+<p>From Davies-Jones 2007</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature. (K)</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+<li><p><strong>q</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific humidity (kg/kg)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>theta_w</strong> – Wet-bulb temperature (K) numpy array or xarray DataArray</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.liquid_water_potential_temperature">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">liquid_water_potential_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_cl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pi</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.liquid_water_potential_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Liquid water potential temperature.</p>
+<p>Derived variable name: th_L</p>
+<p>Approximate form as in MONC</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Potential Temperature. (K)</p></li>
+<li><p><strong>q_cl</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – q_cloud_liquid_mass.</p></li>
+<li><p><strong>pi</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Exner pressure.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>theta_w</strong> – Wet-bulb potential temperature (K) numpy array or xarray DataArray</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.virtual_potential_temperature">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">virtual_potential_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_cl</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.virtual_potential_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Virtual potential temperature.</p>
+<p>Derived variable name: th_v</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Potential Temperature. (K)</p></li>
+<li><p><strong>q_v</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific humidity</p></li>
+<li><p><strong>q_cl</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific cloud liquid water content.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>theta_v</strong> – Virtual potential temperature (K)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.virtual_potential_temperature_monc">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">virtual_potential_temperature_monc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_cl</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.virtual_potential_temperature_monc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Virtual potential temperature.</p>
+<p>Derived variable name: th_v_monc</p>
+<p>Approximate form as in MONC</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Potential Temperature. (K)</p></li>
+<li><p><strong>thref</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Reference Potential Temperature (usually 1D). (K)</p></li>
+<li><p><strong>q_v</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific humidity</p></li>
+<li><p><strong>q_cl</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific cloud liquid water content.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>theta_v</strong> – Virtual potential temperature (K)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.q_total">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">q_total</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.q_total" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specfic Total Water Content.</p>
+<p>Derived variable name: q_total</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> (<em>list of numpy array</em><em> or </em><em>xarray DataArrays</em>) – specific water variables (e.g.[ q_v, q_cl]).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>q_total</strong> – sum of args</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.buoyancy">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">buoyancy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">th_v</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.buoyancy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Buoyancy from theta_v.</p>
+<p>Derived variable name: buoyancy</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>th_v</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Virtual potential temperature.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>buoyancy</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.buoyancy_monc">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">buoyancy_monc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">th_v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thref</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.buoyancy_monc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Buoyancy from theta_v.</p>
+<p>Derived variable name: buoyancy_monc</p>
+<p>MONC approximation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>th_v</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Virtual potential temperature.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>buoyancy</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.dbdz">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">dbdz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">th</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_cl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.dbdz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Vertical Gradient of Buoyancy from theta_v.</p>
+<p>Derived variable name: dbdz</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Potential Temperature. (K)</p></li>
+<li><p><strong>thref</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Reference Potential Temperature (usually 1D). (K)</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+<li><p><strong>q_v</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific humidity</p></li>
+<li><p><strong>q_cl</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific cloud liquid water content.</p></li>
+<li><p><strong>th_v</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Virtual potential temperature.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>dbuoyancy/dz</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.dbdz_monc">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">dbdz_monc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">th</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_cl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.dbdz_monc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Vertical Gradient of Buoyancy from theta_v.</p>
+<p>Derived variable name: db_moncdz</p>
+<p>MONC approximation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Potential Temperature. (K)</p></li>
+<li><p><strong>thref</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Reference Potential Temperature (usually 1D). (K)</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+<li><p><strong>q_v</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific humidity</p></li>
+<li><p><strong>q_cl</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific cloud liquid water content.</p></li>
+<li><p><strong>th_v</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Virtual potential temperature.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>buoyancy</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.rh">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">rh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.rh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Relative Humidity.</p>
+<p>Derived variable name: rh</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature (K).</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+<li><p><strong>q</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific humidity (kg/kg)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>rh</strong> – Relative Humidity.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.rh_ice">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">rh_ice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.rh_ice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Relative Humidity wrt Ice.</p>
+<p>Derived variable name: rh_ice</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature.</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+<li><p><strong>q</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific humidity (kg/kg)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>rh</strong> – Relative Humidity.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.a_L_monc">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">a_L_monc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.a_L_monc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cloud Factor.</p>
+<p>Derived variable name: a_L</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Temperature.</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>a_L</strong> – Factor used in calculating liqid water content.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.cloud_params_monc">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">cloud_params_monc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">th_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_ref</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.cloud_params_monc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cloud Parameters.</p>
+<p>MONC Approximation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>th_ref</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Reference Potential Temperature.</p></li>
+<li><p><strong>p_ref</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Reference Pressure (Pa).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Factors used in calculating liqid water content.
+“T_ref”,”pi_ref”, “qs_ref”, “a_L”, “alpha_L”.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.betas_monc">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">betas_monc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">th</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.betas_monc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Beta factors in cloudy buoyancy calculation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>th</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Potential Temperature. (K)</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(bt, bq, bc, alpha_L, a_L).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple of numpy array or xarray DataArrays</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.buoyancy_moist">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">buoyancy_moist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">th</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">th_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_cl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.buoyancy_moist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Buoyancy including cloud condensation.</p>
+<p>Derived variable name: buoyancy_moist</p>
+<p>MONC approximation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>th</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Potential Temperature. (K)</p></li>
+<li><p><strong>thref</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Reference Potential Temperature (usually 1D). (K)</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+<li><p><strong>q_v</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific humidity</p></li>
+<li><p><strong>q_cl</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific cloud liquid water content.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>buoyancy</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.dmoist_bdz">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">dmoist_bdz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">th</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">th_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_cl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.dmoist_bdz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Vertical Gradient of (buoyancy including cloud condensation).</p>
+<p>Derived variable name: dmoist_bdz</p>
+<p>MONC approximation.
+This is db/dz with b = beta_t theta_l + beta_q q_t.
+Note - not to be used for vertical buoyancy flux.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>th</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Potential Temperature. (K)</p></li>
+<li><p><strong>th_ref</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Reference Potential Temperature (usually 1D). (K)</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+<li><p><strong>q_v</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific humidity</p></li>
+<li><p><strong>q_cl</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific cloud liquid water content.</p></li>
+<li><p><strong>z</strong> (<em>xarray coord.</em>) – </p></li>
+<li><p><strong>zn</strong> (<em>xarray coord.</em>) – </p></li>
+<li><p><strong>thresh</strong> (<em>(</em><em>Optional</em><em>) </em><em>float. Default is 1E-5.</em>) – Threshold for cloud water.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>buoyancy</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.moist_dbdz">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">moist_dbdz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">th</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">th_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_cl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.moist_dbdz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Vertical Gradient of buoyancy (including cloud condensation).</p>
+<p>Derived variable name: moist_dbdz</p>
+<p>MONC approximation
+This is db/dz = beta_t dtheta_l/dz + beta_q dq_t/dz.
+Note - to be used for vertical buoyancy flux.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Potential Temperature. (K)</p></li>
+<li><p><strong>thref</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Reference Potential Temperature (usually 1D). (K)</p></li>
+<li><p><strong>p</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Pressure (Pa).</p></li>
+<li><p><strong>q_v</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific humidity</p></li>
+<li><p><strong>q_cl</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific cloud liquid water content.</p></li>
+<li><p><strong>z</strong> (<em>xarray coord.</em>) – </p></li>
+<li><p><strong>zn</strong> (<em>xarray coord.</em>) – </p></li>
+<li><p><strong>thresh</strong> (<em>(</em><em>Optional</em><em>) </em><em>float. Default is 1E-5.</em>) – Threshold for cloud water.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>buoyancy</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.saturation">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">saturation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">th</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">th_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_cl</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.saturation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Effective saturation.</p>
+<p>Derived variable name: saturation</p>
+<p>MONC approximation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>th</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Potential Temperature. (K)</p></li>
+<li><p><strong>th_ref</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Reference Potential Temperature (usually 1D). (K)</p></li>
+<li><p><strong>p_ref</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – Reference Pressure (Pa).</p></li>
+<li><p><strong>q_v</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific humidity</p></li>
+<li><p><strong>q_cl</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific cloud liquid water content.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>saturation</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.thermodynamics.thermodynamics.cloud_fraction">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.thermodynamics.thermodynamics.</span></span><span class="sig-name descname"><span class="pre">cloud_fraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q_cl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.thermodynamics.thermodynamics.cloud_fraction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute indicator function on cloud.</p>
+<p>Derived variable name: cloud_fraction</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>q_cl</strong> (<em>numpy array</em><em> or </em><em>xarray DataArray</em>) – specific cloud liquid water content.</p></li>
+<li><p><strong>thresh</strong> (<em>(</em><em>Optional</em><em>) </em><em>float. Default is 1E-5.</em>) – Threshold for cloud water.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>numpy array or xarray DataArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-monc_utils.thermodynamics"></span></section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">The thermodynamics module.</a><ul>
+<li><a class="reference internal" href="#detailed-module-contents">Detailed Module Contents</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="file_utils.html"
+                          title="previous chapter">The file_utils module.</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/thermodynamics.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="file_utils.html" title="The file_utils module."
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">The thermodynamics module.</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, 2020, 2021 Peter Clark.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+    </div>
+  </body>
+</html>
