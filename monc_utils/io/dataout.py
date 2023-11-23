@@ -11,6 +11,11 @@ from dask.diagnostics import ProgressBar
 
 import monc_utils  # for global prameters
 
+from loguru import logger
+
+#logger.disable("monc_utils.io.dataout")
+
+
 def save_field(dataset, field, write_to_file=True):
     """
     Save dask-chunked xarray field to xarray Dataset.
@@ -31,11 +36,11 @@ def save_field(dataset, field, write_to_file=True):
     """
     fn = dataset['file'].split('/')[-1]
     if field.name not in dataset['ds']:
-        print(f"Saving {field.name} to {fn}")
         dataset['ds'][field.name] = field
         encoding = {field.name: 
                     {"dtype": monc_utils.global_config['output_precision']} }
         if write_to_file:
+            logger.info(f"Saving {field.name} to {fn}")
             d = dataset['ds'][field.name].to_netcdf(
                     dataset['file'],
                     unlimited_dims="time",
@@ -45,12 +50,13 @@ def save_field(dataset, field, write_to_file=True):
             if monc_utils.executing_on_cluster:
                 results = d.compute()
             else:
+                print(f"Saving {field.name} to {fn}")
                 with ProgressBar():
                     results = d.compute()
             # This wait seems to be needed to give i/o time to flush caches.
             time.sleep(monc_utils.global_config['write_sleeptime'])
     else:
-        print(f"{field.name} already in {fn}")
+        logger.info(f"{field.name} already in {fn}")
     return dataset['ds'][field.name]
 
 def setup_child_file(source_file, destdir, outtag, options=None, override=False) :
@@ -108,7 +114,7 @@ def setup_child_file(source_file, destdir, outtag, options=None, override=False)
 
     else :
         if exists:
-            print(f"Overwriting file {derived_dataset_name}.")
+            logger.info(f"Overwriting file {derived_dataset_name}.")
         exists = False
 
         derived_dataset = xr.Dataset(coords =
@@ -119,11 +125,10 @@ def setup_child_file(source_file, destdir, outtag, options=None, override=False)
         for inc in atts_out:
             if isinstance(atts_out[inc], (dict, bool, type(None))):
                 atts_out[inc] = str(atts_out[inc])
-                print(f'{inc}: {atts_out[inc]}')
+                logger.debug(f'{inc}: {atts_out[inc]}')
         derived_dataset.attrs = atts_out
 
         derived_dataset.to_netcdf(derived_dataset_name, mode='w')
-        print(derived_dataset)
     do = {'file':derived_dataset_name, 'ds': derived_dataset}
     ds.close()
     return do, exists

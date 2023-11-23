@@ -27,6 +27,9 @@ from .string_utils import get_string_index
 import xarray
 
 import warnings
+
+from loguru import logger
+
 warnings.filterwarnings("ignore", category=FutureWarning,
                                    module='xarray.core.missing')
 
@@ -135,7 +138,7 @@ def grid_conform_x(field, target_xdim):
         return field
     xdim = field.dims[xaxis]
     if xdim == target_xdim:
-        print(f'{field.name} xdim is already {target_xdim}')
+        logger.info(f'{field.name} xdim is already {target_xdim}')
         return field
     x = field.coords[xdim].data
     dx = x[1] - x[0]
@@ -148,10 +151,10 @@ def grid_conform_x(field, target_xdim):
         xmn = lambda arr:(0.5 * (arr + np.roll(arr, -1, axis=xaxis)))
         x_new = x + dx / 2.0
     else:
-        print(f"Cannot transform {xdim} to {target_xdim}")
+        logger.warning(f"Cannot transform {xdim} to {target_xdim}")
         return field
 
-    print(f'{field.name} {xdim} to {target_xdim}')
+    logger.info(f'{field.name} {xdim} to {target_xdim}')
     newfield = field.rename({xdim:target_xdim})
     newfield = exec_fn(xmn, newfield, xaxis)
     newfield.coords[target_xdim] = x_new
@@ -180,7 +183,7 @@ def grid_conform_y(field, target_ydim):
         return field
     ydim = field.dims[yaxis]
     if ydim == target_ydim:
-        print(f'{field.name} ydim is already {target_ydim}')
+        logger.info(f'{field.name} ydim is already {target_ydim}')
         return field
     y = field.coords[ydim].data
     dy = y[1] - y[0]
@@ -193,10 +196,10 @@ def grid_conform_y(field, target_ydim):
         ymn = lambda arr:(0.5 * (arr + np.roll(arr, -1, axis=yaxis)))
         y_new = y + dy / 2.0
     else:
-        print(f"Cannot transform {ydim} to {target_ydim}")
+        logger.warning(f"Cannot transform {ydim} to {target_ydim}")
         return field
 
-    print(f'{field.name} {ydim} to {target_ydim}')
+    logger.info(f'{field.name} {ydim} to {target_ydim}')
     newfield = field.rename({ydim:target_ydim})
     newfield = exec_fn(ymn, newfield, yaxis)
     newfield.coords[target_ydim] = y_new
@@ -226,16 +229,16 @@ def grid_conform_z(field, z_w, z_p, target_zdim):
         return field
     zdim = field.dims[zaxis]
     if zdim == target_zdim:
-        print(f'{field.name} zdim is already {target_zdim}')
+        logger.info(f'{field.name} zdim is already {target_zdim}')
         return field
     elif target_zdim == 'z_w':
-        print(f'{field.name} {zdim} to {target_zdim}')
+        logger.info(f'{field.name} {zdim} to {target_zdim}')
         return interpolate_z(field, z_w)
     elif target_zdim == 'z_p':
-        print(f'{field.name} {zdim} to {target_zdim}')
+        logger.info(f'{field.name} {zdim} to {target_zdim}')
         return interpolate_z(field, z_p)
     else:
-        print(f"{field.name}: cannot transform {zdim} to {target_zdim}")
+        logger.warning(f"{field.name}: cannot transform {zdim} to {target_zdim}")
         return field
 
 def grid_conform(field, z_w, z_p, grid: str = 'p' ):
@@ -288,15 +291,15 @@ def d_by_dx_field_native(field):
     x = field.coords[xdim].data
     dx = x[1] - x[0]
     if xdim == 'x_u':
-        print(f"d_by_dx_{field.name}_on_x_u ")
+        logger.info(f"d_by_dx_{field.name}_on_x_u ")
         # Data on x_u will have (f[i] - f[i-1])/dx on x_p[i]
         xdim_new = 'x_p'
         xdrv = lambda arr:((arr - np.roll(arr,  1, axis=xaxis)) / dx)
         x_new = x - dx / 2.0
     else:
         if xdim != 'x_p':
-            print(f"d_by_dx_field on unknown grid {xdim}, assuming x_p.")
-        print(f"d_by_dx_{field.name}_on_x_p ")
+            logger.warning(f"d_by_dx_field on unknown grid {xdim}, assuming x_p.")
+        logger.info(f"d_by_dx_{field.name}_on_x_p ")
         # Data on x_p will have (f[i+1] - f[i])/dx on x_u[i]
         xdim_new = 'x_u'
         xdrv = lambda arr:((np.roll(arr, -1, axis=xaxis) - arr) / dx)
@@ -356,15 +359,15 @@ def d_by_dy_field_native(field):
     y = field.coords[ydim].data
     dy = y[1] - y[0]
     if ydim == 'y_v':
-        print(f"d_by_dy_{field.name}_on_y_v ")
+        logger.info(f"d_by_dy_{field.name}_on_y_v ")
         # Data on y_v will have (f[j] - f[j-1])/dy on y_p[j]
         ydim_new = 'y_p'
         ydrv = lambda arr:((arr - np.roll(arr,  1, axis=yaxis)) / dy)
         y_new = y - dy / 2.0
     else:
         if ydim != 'y_p':
-            print(f"d_by_dy_field on unknown grid {ydim}, assuming y_p.")
-        print(f"d_by_dy_{field.name}_on_y_p ")
+            logger.warning(f"d_by_dy_field on unknown grid {ydim}, assuming y_p.")
+        logger.info(f"d_by_dy_{field.name}_on_y_p ")
         # Data on y_p will have (f[j+1] - f[j])/dy on y_v[j]
         ydim_new = 'y_v'
         ydrv = lambda arr:((np.roll(arr, -1, axis=yaxis) - arr) / dy)
@@ -422,7 +425,7 @@ def d_by_dz_field_native(field):
     zdim = field.dims[zaxis]
     zcoord = field.coords[zdim].data
     if zdim == 'z_p' or zdim == 'zn' :
-        print(f"d_by_dz_{field.name}_on_z_p ")
+        logger.info(f"d_by_dz_{field.name}_on_z_p ")
         # Differences will be at midpoints between z_p points.
         # These are only z_w points on a uniform grid.
         # Furthermore, we need additional point at the top.
@@ -432,14 +435,14 @@ def d_by_dz_field_native(field):
         (exn, dexn) = (-1, -1)
         
     elif zdim == 'z' :
-        print(f"d_by_dz_{field.name}_on_z ")
+        logger.info(f"d_by_dz_{field.name}_on_z ")
         zdim_new = 'zn'
         pad = (1,0)
         nroll = 1
         (exn, dexn) = (0, 1)
         
     else:
-        print(f"d_by_dz_{field.name}_on_z_w ")
+        logger.info(f"d_by_dz_{field.name}_on_z_w ")
         # Differences will be at midpoints between z_w points.
         # These are z_p points even on a uniform grid.
         # We need additional point at the bottom.

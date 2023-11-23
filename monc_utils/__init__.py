@@ -1,6 +1,11 @@
 import os
 import yaml
 
+from loguru import logger
+
+logger.disable("monc_utils")
+
+
 # System-defined parameters
 # Determine computation environment (currently a binary choice)
 try:
