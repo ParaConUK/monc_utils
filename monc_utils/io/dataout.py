@@ -8,8 +8,11 @@ import time
 import os
 import xarray as xr
 from dask.diagnostics import ProgressBar
+from pathlib import Path
 
 import monc_utils  # for global prameters
+
+from loguru import logger
 
 def save_field(dataset, field, write_to_file=True):
     """
@@ -29,13 +32,15 @@ def save_field(dataset, field, write_to_file=True):
     None.
 
     """
-    fn = dataset['file'].split('/')[-1]
+    fn = Path(dataset['file']).name
     if field.name not in dataset['ds']:
-        print(f"Saving {field.name} to {fn}")
+        out_prec = monc_utils.global_config['output_precision']
+        if field.dtype != out_prec:
+            field = field.astype(out_prec)
         dataset['ds'][field.name] = field
-        encoding = {field.name: 
-                    {"dtype": monc_utils.global_config['output_precision']} }
+        encoding = {field.name: {"dtype": out_prec}}
         if write_to_file:
+            logger.info(f"Saving {field.name} to {fn} with precision {out_prec}")
             d = dataset['ds'][field.name].to_netcdf(
                     dataset['file'],
                     unlimited_dims="time",
@@ -45,12 +50,13 @@ def save_field(dataset, field, write_to_file=True):
             if monc_utils.executing_on_cluster:
                 results = d.compute()
             else:
+                print(f"Saving {field.name} to {fn}")
                 with ProgressBar():
                     results = d.compute()
             # This wait seems to be needed to give i/o time to flush caches.
             time.sleep(monc_utils.global_config['write_sleeptime'])
     else:
-        print(f"{field.name} already in {fn}")
+        logger.info(f"{field.name} already in {fn}")
     return dataset['ds'][field.name]
 
 def setup_child_file(source_file, destdir, outtag, options=None, override=False) :
@@ -79,28 +85,30 @@ def setup_child_file(source_file, destdir, outtag, options=None, override=False)
         True when input **source_file** already existed and was not overwritten
 
     """
-    if os.path.isfile(source_file):
-        ds = xr.open_dataset(source_file)
+    
+    source_path = Path(source_file)
+    if source_path.is_file():
+        ds = xr.open_dataset(source_path)
         atts = ds.attrs
     else:
-        raise FileNotFoundError(f"Cannot find file {source_file}.")
+        raise FileNotFoundError(f"Cannot find file {source_path}.")
         
     if options == None:
         options = {}
-
-    derived_dataset_name = os.path.basename(source_file)
-    derived_dataset_name = ('.').join(derived_dataset_name.split('.')[:-1])
+    
+    derived_dataset_name = source_path.stem
 
     if monc_utils.global_config['l_slurm_job_tag'] \
         and monc_utils.executing_on_cluster:
         jn = os.environ['SLURM_JOB_NAME']
-        derived_dataset_name = destdir+derived_dataset_name \
-            + "_"+jn+ "_" + outtag + ".nc"
-    else:
-        derived_dataset_name = destdir+derived_dataset_name \
-            + "_" + outtag + ".nc"
+        derived_dataset_name = derived_dataset_name + "_" + jn
 
-    exists = os.path.isfile(derived_dataset_name)
+    derived_dataset_name = destdir+derived_dataset_name \
+            + "_" + outtag + ".nc"
+            
+    derived_dataset_path = Path(derived_dataset_name)
+            
+    exists = derived_dataset_path.is_file()
 
     if exists and not override :
 
@@ -108,7 +116,7 @@ def setup_child_file(source_file, destdir, outtag, options=None, override=False)
 
     else :
         if exists:
-            print(f"Overwriting file {derived_dataset_name}.")
+            logger.info(f"Overwriting file {derived_dataset_name}.")
         exists = False
 
         derived_dataset = xr.Dataset(coords =
@@ -119,11 +127,10 @@ def setup_child_file(source_file, destdir, outtag, options=None, override=False)
         for inc in atts_out:
             if isinstance(atts_out[inc], (dict, bool, type(None))):
                 atts_out[inc] = str(atts_out[inc])
-                print(f'{inc}: {atts_out[inc]}')
+                logger.debug(f'{inc}: {atts_out[inc]}')
         derived_dataset.attrs = atts_out
 
         derived_dataset.to_netcdf(derived_dataset_name, mode='w')
-        print(derived_dataset)
     do = {'file':derived_dataset_name, 'ds': derived_dataset}
     ds.close()
     return do, exists

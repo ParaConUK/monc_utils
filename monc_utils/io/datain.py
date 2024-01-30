@@ -17,6 +17,7 @@ import monc_utils.thermodynamics.thermodynamics as th
 import monc_utils.thermodynamics.thermodynamics_constants as thc
 import monc_utils
 import re
+from loguru import logger
 
 def correct_grid_and_units(var_name: str,
                            vard: xarray.core.dataarray.DataArray,
@@ -181,7 +182,7 @@ def get_derived_vars(source_dataset, ref_dataset,
         if var is not None:
             args.append(var)
         else:
-            print(f'{v} not in dataset.')
+            logger.info(f'{v} not in dataset.')
     vard = dv['func'](*args)
     vard.name = var_name
     vard.attrs['units'] = dv['units']
@@ -231,7 +232,7 @@ def get_data(source_dataset, ref_dataset, var_name: str,
     @author: Peter Clark
 
     """
-    print(f'Retrieving {var_name:s}.')
+    logger.info(f'Retrieving {var_name:s}.')
     try:
         if var_name in source_dataset:
             vard = source_dataset[var_name]
@@ -241,7 +242,7 @@ def get_data(source_dataset, ref_dataset, var_name: str,
             and var_name in options['aliases']:
             for alias in options['aliases'][var_name]:
                 if alias in source_dataset:
-                    print(f'Retrieving {alias:s} as {var_name:s}.')
+                    logger.info(f'Retrieving {alias:s} as {var_name:s}.')
                     vard = source_dataset[alias]
                     vard.name = var_name
                     break
@@ -378,7 +379,7 @@ def get_and_transform(source_dataset, ref_dataset, var_name,
     # Re-chunk data if using dask
     if not monc_utils.global_config['no_dask']:
         var = re_chunk(var)
-#    print(var)
+#    logger.info(var)
 
     return var
 
@@ -443,7 +444,7 @@ def get_data_on_grid(source_dataset, ref_dataset, var_name,
             and op_var_name in derived_dataset['ds'].variables:
 
             op_var = derived_dataset['ds'][op_var_name]
-            print(f'Retrieved {op_var_name:s} from derived dataset.')
+            logger.info(f'Retrieved {op_var_name:s} from derived dataset.')
             return op_var
 
     op_var = get_and_transform(source_dataset, ref_dataset,
@@ -497,7 +498,7 @@ def get_pref(source_dataset, ref_dataset,  options=None):
         pref = thc.p_ref_theta * piref**thc.rk
 #        pref = xarray.DataArray(pref, dims=['time'], coords={'time':[0.0]})
 
-#                print('pref', pref)
+#                logger.info('pref', pref)
     else:
         pref = ref_dataset['prefn']
         [itime] = get_string_index(pref.dims, ['time'])

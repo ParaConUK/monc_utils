@@ -8,6 +8,7 @@ import numpy as np
 import monc_utils
 from monc_utils.data_utils.string_utils import get_string_index
 
+from loguru import logger
 
 def re_chunk(f, chunks=None, xch='all', ych='all', zch='auto', tch='auto'):
     """
@@ -44,7 +45,7 @@ def re_chunk(f, chunks=None, xch='all', ych='all', zch='auto', tch='auto'):
     if monc_utils.global_config['no_dask']:
         return f
 
-    print('*** Using re_chunk ***')
+    logger.warning('*** Using re_chunk ***')
 
     defn = 1
 
