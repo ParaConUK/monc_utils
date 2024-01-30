@@ -66,7 +66,7 @@ def set_global_config(in_opts):
         if 'global_config' in update_config:
             global_config.update(update_config['global_config'])
         else:
-            print('[WARN] Attempted set_global_config via yaml, but global_config entry not found.')
+            logger.warn('Attempted set_global_config via yaml, but global_config entry not found.')
     elif type(in_opts) is dict:
         global_config.update(in_opts)
     else:

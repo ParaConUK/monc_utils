@@ -8,13 +8,11 @@ import time
 import os
 import xarray as xr
 from dask.diagnostics import ProgressBar
+from pathlib import Path
 
 import monc_utils  # for global prameters
 
 from loguru import logger
-
-#logger.disable("monc_utils.io.dataout")
-
 
 def save_field(dataset, field, write_to_file=True):
     """
@@ -34,13 +32,15 @@ def save_field(dataset, field, write_to_file=True):
     None.
 
     """
-    fn = dataset['file'].split('/')[-1]
+    fn = Path(dataset['file']).name
     if field.name not in dataset['ds']:
+        out_prec = monc_utils.global_config['output_precision']
+        if field.dtype != out_prec:
+            field = field.astype(out_prec)
         dataset['ds'][field.name] = field
-        encoding = {field.name: 
-                    {"dtype": monc_utils.global_config['output_precision']} }
+        encoding = {field.name: {"dtype": out_prec}}
         if write_to_file:
-            logger.info(f"Saving {field.name} to {fn}")
+            logger.info(f"Saving {field.name} to {fn} with precision {out_prec}")
             d = dataset['ds'][field.name].to_netcdf(
                     dataset['file'],
                     unlimited_dims="time",
@@ -85,28 +85,30 @@ def setup_child_file(source_file, destdir, outtag, options=None, override=False)
         True when input **source_file** already existed and was not overwritten
 
     """
-    if os.path.isfile(source_file):
-        ds = xr.open_dataset(source_file)
+    
+    source_path = Path(source_file)
+    if source_path.is_file():
+        ds = xr.open_dataset(source_path)
         atts = ds.attrs
     else:
-        raise FileNotFoundError(f"Cannot find file {source_file}.")
+        raise FileNotFoundError(f"Cannot find file {source_path}.")
         
     if options == None:
         options = {}
-
-    derived_dataset_name = os.path.basename(source_file)
-    derived_dataset_name = ('.').join(derived_dataset_name.split('.')[:-1])
+    
+    derived_dataset_name = source_path.stem
 
     if monc_utils.global_config['l_slurm_job_tag'] \
         and monc_utils.executing_on_cluster:
         jn = os.environ['SLURM_JOB_NAME']
-        derived_dataset_name = destdir+derived_dataset_name \
-            + "_"+jn+ "_" + outtag + ".nc"
-    else:
-        derived_dataset_name = destdir+derived_dataset_name \
-            + "_" + outtag + ".nc"
+        derived_dataset_name = derived_dataset_name + "_" + jn
 
-    exists = os.path.isfile(derived_dataset_name)
+    derived_dataset_name = destdir+derived_dataset_name \
+            + "_" + outtag + ".nc"
+            
+    derived_dataset_path = Path(derived_dataset_name)
+            
+    exists = derived_dataset_path.is_file()
 
     if exists and not override :
 

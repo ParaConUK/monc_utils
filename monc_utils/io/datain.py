@@ -19,8 +19,6 @@ import monc_utils
 import re
 from loguru import logger
 
-#logger.disable("monc_utils.io.datain")
-
 def correct_grid_and_units(var_name: str,
                            vard: xarray.core.dataarray.DataArray,
                            source_dataset: xarray.core.dataset.Dataset,
