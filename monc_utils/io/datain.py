@@ -305,12 +305,16 @@ def get_data(source_dataset, ref_dataset, var_name: str,
                                       target_var_name,
                                       options=options,
                                       allow_none=allow_none)
+                
+                # No else required as match guaranteed above.
                 if var_name[4] == 'x':
                     vard = do.d_by_dx_field_native(target_var)
                 elif var_name[4] == 'y':
                     vard = do.d_by_dy_field_native(target_var)
                 elif var_name[4] == 'z':                    
                     vard = do.d_by_dz_field_native(target_var )
+                    
+                # The following should be a null operation for derivatives.
 
                 vard = correct_grid_and_units(var_name, 
                                               vard, 
@@ -427,7 +431,7 @@ def get_data_on_grid(source_dataset, ref_dataset, var_name,
     # already, and use if it is.
     # Otherwise strip '_on_x' and go back to source data as per default.
 
-    # First, find op_name
+    # First, find op_var_name
     # Default
     op_var_name = var_name + ongrid
 
@@ -477,7 +481,7 @@ def get_pref(source_dataset, ref_dataset,  options=None):
 
     Returns
     -------
-    (pref, piref)
+    pref
 
     """
     if ref_dataset is None:

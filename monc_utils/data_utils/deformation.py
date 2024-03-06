@@ -14,6 +14,7 @@ from monc_utils.io.dataout import save_field
 from monc_utils.data_utils.string_utils import get_string_index
 from monc_utils.data_utils.dask_utils import re_chunk
 
+from loguru import logger
 
 def deformation(source_dataset, ref_dataset, derived_dataset,
                 options, grid='w', uvw_names=["u","v","w"]) :
@@ -66,7 +67,7 @@ def deformation(source_dataset, ref_dataset, derived_dataset,
 
     nch = int(sh[iix]/(2**int(np.log(sh[iix]*sh[iiy]*sh[iiz]/max_ch)/np.log(2)/2)))
 
-    print(f'Deformation nch={nch}')
+    logger.info(f'Deformation nch={nch}')
 
     u = re_chunk(u, xch=nch, ych=nch, zch = 'all')
 
@@ -74,11 +75,13 @@ def deformation(source_dataset, ref_dataset, derived_dataset,
         z_w = source_dataset["z_w"]
     elif "z" in source_dataset:
         z_w = source_dataset["z"].rename({'z':'z_w'})
+        z_w.name = 'z_w'
         
     if "z_p" in source_dataset:
         z_p = source_dataset["z_p"]
     elif "zn" in source_dataset:
-        z_p = source_dataset["zn"].rename({'zn':'z_w'})
+        z_p = source_dataset["zn"].rename({'zn':'z_p'})
+        z_p.name = 'z_p'
 
     ux = do.d_by_dx_field(u, z_w, z_p, grid = grid )
 
@@ -86,7 +89,7 @@ def deformation(source_dataset, ref_dataset, derived_dataset,
 
     uz = do.d_by_dz_field(u, z_w, z_p, grid = grid )
 
-    u = None # Save some memory
+    del u # Save some memory
 
     v = get_data(source_dataset, ref_dataset, uvw_names[1], options)
     v = re_chunk(v, xch=nch, ych=nch, zch = 'all')
@@ -97,7 +100,7 @@ def deformation(source_dataset, ref_dataset, derived_dataset,
 
     vz = do.d_by_dz_field(v, z_w, z_p, grid = grid )
 
-    v = None # Save some memory
+    del v # Save some memory
 
     w = get_data(source_dataset, ref_dataset, uvw_names[2], options)
     w = re_chunk(w, xch=nch, ych=nch, zch = 'all')
@@ -108,9 +111,9 @@ def deformation(source_dataset, ref_dataset, derived_dataset,
 
     wz = do.d_by_dz_field(w, z_w, z_p, grid = grid )
 
-    w = None # Save some memory
+    del w # Save some memory
 
-    print('Concatenating derivatives')
+    logger.info('Concatenating derivatives')
 
     t0 = xr.concat([ux, uy, uz], dim='j', coords='minimal',
                    compat='override')
@@ -123,7 +126,7 @@ def deformation(source_dataset, ref_dataset, derived_dataset,
     defm.name = 'deformation'
     defm.attrs={'units':'s-1'}
 
-    print(defm)
+    logger.info(f'Deformation: {defm}')
 
     if options is not None and options['save_all'].lower() == 'yes':
         defm = save_field(derived_dataset, defm)

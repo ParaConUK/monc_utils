@@ -20,8 +20,11 @@ This will install as if into the standard library but using the cloned code
 which can be edited. Please commit code improvements and discuss merging with 
 the master branch with Peter Clark and other users.
 
+New in version 0.3.2
+1. Bugfix to deformation.
+
 New in version 0.3.1
-1. Fix to float32 output.
+1. Fixes to make output to float32 work, plus some streamlining using Path.
 
 New in version 0.3.0
 1. Corrections to inv_esat and inv_esat_ice
@@ -30,5 +33,4 @@ New in version 0.3.0
 	- saturated_unsaturated_wet_bulb_potential_temperature
 
 New in version 0.2.0
-
 1. The ability to read in spatial derivatives of variables.

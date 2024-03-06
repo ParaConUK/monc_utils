@@ -25,7 +25,7 @@ import monc_utils
 from .dask_utils import re_chunk
 from .string_utils import get_string_index
 import xarray
-
+import typing
 import warnings
 
 from loguru import logger
@@ -40,7 +40,8 @@ grid_def = { 'p':('x_p', 'y_p', 'z_p'),
              'w':('x_p', 'y_p', 'z_w')}
 
 
-def exec_fn(fn, field: xarray.DataArray, axis: int) -> xarray.DataArray:
+def exec_fn(fn: typing.Callable, 
+            field: xarray.DataArray, axis: int) -> xarray.DataArray:
     """
     Execute function using map_overlap with overlap on selected axis.
 
@@ -58,7 +59,8 @@ def exec_fn(fn, field: xarray.DataArray, axis: int) -> xarray.DataArray:
     new xarray.DataArray
 
     """
-    if monc_utils.global_config['no_dask']:
+    print(type(field.data))
+    if monc_utils.global_config['no_dask'] or type(field.data) is np.ndarray:
         field = fn(field)
     else:
         if monc_utils.global_config['use_map_overlap']:
