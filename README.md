@@ -24,7 +24,7 @@ New in version 0.3.2
 1. Bugfix to deformation.
 
 New in version 0.3.1
-1.Fixes to make output to float32 work, plus some streamlining using Path.
+1. Fixes to make output to float32 work, plus some streamlining using Path.
 
 New in version 0.3.0
 1. Corrections to inv_esat and inv_esat_ice
