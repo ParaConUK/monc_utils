@@ -10,10 +10,13 @@ Variable Names
 This package uses xarray - returned variables are xarray DataArrays. 
 These have names; this package follows the following naming convention.
 
-    * Variables or derived variables read from the source or reference file using :py:func:`~monc_utils.io.datain.get_data` have the name requested (possibly changed from the internal name in the source data by the aliases dictionary). For example, ``u``. They have grid specifications corrected to the appropriate dimensionnspecificatio  in MONC (for example, ``u`` will be on ``x_u``, ``y_p`` and ``z_p``) and the time dimension renamed ``time``.    
+    * Variables or derived variables read from the source or reference file using :py:func:`~monc_utils.io.datain.get_data` have the name requested (possibly changed from the internal name in the source data by the aliases dictionary). For example, ``u``. They have grid specifications corrected to the appropriate dimension specification in MONC (for example, ``u`` will be on ``x_u``, ``y_p`` and ``z_p``) and the time dimension renamed ``time``.    
     * Variables or derived variables read from the source or reference file using :py:func:`~monc_utils.io.datain.get_and_transform` behave as above but are then interpolated to the requested grid (``u``, ``v``, ``w`` or ``p,`` or a tuple made up of x, y and z dimension names) using :py:func:`~monc_utils.data_utils.difference_ops.grid_conform`. 
     * Variables or derived variables read from the source or reference file using :py:func:`~monc_utils.io.datain.get_data_on_grid` behave as above but have the grid name appended to the variable name, e.g. ``u_on_w``. If ``options['save_all']`` is set to ``'yes'``, the variable is retrieved from the derived data file if already there and stored to it if not.
     
+	
+Similar functionality has now been added to allow idealised UM data in NetCDF form to be read to look like MONC data, allowing similar derived variable. See :py:func:`~monc_utils.io_um.datain`.
+
 ================
 Input Transforms
 ================
@@ -53,7 +56,12 @@ The derivatives are calculated using :py:mod:`~monc_utils.data_utils.difference_
 Version History
 ===============
 
-Latest version is 0.3.0
+Latest version is 0.4.0
+
+.. topic:: New at 0.4.0
+
+	#. Added io_um package.
+
 
 .. topic:: New at 0.3.0
 

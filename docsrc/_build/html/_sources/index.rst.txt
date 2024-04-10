@@ -1,4 +1,4 @@
-.. Subfilter documentation master file, created by
+.. monc_utils documentation master file, created by
    sphinx-quickstart on Thu Apr 25 10:30:31 2019.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
@@ -13,6 +13,7 @@ Welcome to monc_utils's documentation!
    intro
    data_utils
    io
+   io_um
    thermodynamics
     
 
