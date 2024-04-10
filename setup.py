@@ -10,13 +10,14 @@ setup(
     # Needed to actually package something
     packages=['monc_utils', 
               'monc_utils/io',
+              'monc_utils/io_um',
               'monc_utils/thermodynamics',
               'monc_utils/data_utils',
               ],
     # Needed for dependencies
     install_requires=['numpy', 'scipy', 'dask', 'xarray'],
     # *strongly* suggested for sharing
-    version='0.3.1',
+    version='0.4.0',
     # The license can be anything you like
     license='MIT',
     description='python code to improve io and compute useful quantities from MONC output.',

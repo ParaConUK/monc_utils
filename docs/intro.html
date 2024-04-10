@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Introduction &#8212; monc_utils 0.3.0 documentation</title>
+    <title>Introduction &#8212; monc_utils 0.4.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -26,12 +26,15 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="data_utils.html" title="The data_utils sub-package."
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Welcome to monc_utils’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Introduction</a></li> 
       </ul>
     </div>  
@@ -51,11 +54,12 @@
 These have names; this package follows the following naming convention.</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>Variables or derived variables read from the source or reference file using <code class="xref py py-func docutils literal notranslate"><span class="pre">get_data()</span></code> have the name requested (possibly changed from the internal name in the source data by the aliases dictionary). For example, <code class="docutils literal notranslate"><span class="pre">u</span></code>. They have grid specifications corrected to the appropriate dimensionnspecificatio  in MONC (for example, <code class="docutils literal notranslate"><span class="pre">u</span></code> will be on <code class="docutils literal notranslate"><span class="pre">x_u</span></code>, <code class="docutils literal notranslate"><span class="pre">y_p</span></code> and <code class="docutils literal notranslate"><span class="pre">z_p</span></code>) and the time dimension renamed <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p></li>
-<li><p>Variables or derived variables read from the source or reference file using <code class="xref py py-func docutils literal notranslate"><span class="pre">get_and_transform()</span></code> behave as above but are then interpolated to the requested grid (<code class="docutils literal notranslate"><span class="pre">u</span></code>, <code class="docutils literal notranslate"><span class="pre">v</span></code>, <code class="docutils literal notranslate"><span class="pre">w</span></code> or <code class="docutils literal notranslate"><span class="pre">p,</span></code> or a tuple made up of x, y and z dimension names) using <code class="xref py py-func docutils literal notranslate"><span class="pre">grid_conform()</span></code>.</p></li>
-<li><p>Variables or derived variables read from the source or reference file using <code class="xref py py-func docutils literal notranslate"><span class="pre">get_data_on_grid()</span></code> behave as above but have the grid name appended to the variable name, e.g. <code class="docutils literal notranslate"><span class="pre">u_on_w</span></code>. If <code class="docutils literal notranslate"><span class="pre">options['save_all']</span></code> is set to <code class="docutils literal notranslate"><span class="pre">'yes'</span></code>, the variable is retrieved from the derived data file if already there and stored to it if not.</p></li>
+<li><p>Variables or derived variables read from the source or reference file using <a class="reference internal" href="datain.html#monc_utils.io.datain.get_data" title="monc_utils.io.datain.get_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_data()</span></code></a> have the name requested (possibly changed from the internal name in the source data by the aliases dictionary). For example, <code class="docutils literal notranslate"><span class="pre">u</span></code>. They have grid specifications corrected to the appropriate dimension specification in MONC (for example, <code class="docutils literal notranslate"><span class="pre">u</span></code> will be on <code class="docutils literal notranslate"><span class="pre">x_u</span></code>, <code class="docutils literal notranslate"><span class="pre">y_p</span></code> and <code class="docutils literal notranslate"><span class="pre">z_p</span></code>) and the time dimension renamed <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p></li>
+<li><p>Variables or derived variables read from the source or reference file using <a class="reference internal" href="datain.html#monc_utils.io.datain.get_and_transform" title="monc_utils.io.datain.get_and_transform"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_and_transform()</span></code></a> behave as above but are then interpolated to the requested grid (<code class="docutils literal notranslate"><span class="pre">u</span></code>, <code class="docutils literal notranslate"><span class="pre">v</span></code>, <code class="docutils literal notranslate"><span class="pre">w</span></code> or <code class="docutils literal notranslate"><span class="pre">p,</span></code> or a tuple made up of x, y and z dimension names) using <a class="reference internal" href="difference_ops.html#monc_utils.data_utils.difference_ops.grid_conform" title="monc_utils.data_utils.difference_ops.grid_conform"><code class="xref py py-func docutils literal notranslate"><span class="pre">grid_conform()</span></code></a>.</p></li>
+<li><p>Variables or derived variables read from the source or reference file using <a class="reference internal" href="datain.html#monc_utils.io.datain.get_data_on_grid" title="monc_utils.io.datain.get_data_on_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_data_on_grid()</span></code></a> behave as above but have the grid name appended to the variable name, e.g. <code class="docutils literal notranslate"><span class="pre">u_on_w</span></code>. If <code class="docutils literal notranslate"><span class="pre">options['save_all']</span></code> is set to <code class="docutils literal notranslate"><span class="pre">'yes'</span></code>, the variable is retrieved from the derived data file if already there and stored to it if not.</p></li>
 </ul>
 </div></blockquote>
+<p>Similar functionality has now been added to allow idealised UM data in NetCDF form to be read to look like MONC data, allowing similar derived variable. See <a class="reference internal" href="datain_um.html#module-monc_utils.io_um.datain" title="monc_utils.io_um.datain"><code class="xref py py-func docutils literal notranslate"><span class="pre">datain()</span></code></a>.</p>
 </section>
 <section id="input-transforms">
 <h1>Input Transforms<a class="headerlink" href="#input-transforms" title="Permalink to this heading">¶</a></h1>
@@ -64,7 +68,7 @@ If MONC is used, the horizontal grid specification is corrected on input to <cod
 Similarly, <code class="docutils literal notranslate"><span class="pre">'z'</span></code> is changed to <code class="docutils literal notranslate"><span class="pre">'z_w'</span></code> and <code class="docutils literal notranslate"><span class="pre">'zn'</span></code> is to <code class="docutils literal notranslate"><span class="pre">'z_p'</span></code>.</p>
 <p>To facilitate use of other models, a list of aliases can be provided under the key ‘aliases’ to translate variable names.</p>
 <p>In order to facilitate comparisons and products, tools have been coded (efficiently but not very elegantly) to transform data from different points on the C-grid. Thus, second order terms can be computed correctly on required points just by specifying the ouput grid.</p>
-<p>A number of derived variables have been implemented that are calculated provided the required inputs are available. These are provided in the <code class="xref py py-mod docutils literal notranslate"><span class="pre">thermodynamics</span></code> module.
+<p>A number of derived variables have been implemented that are calculated provided the required inputs are available. These are provided in the <a class="reference internal" href="thermodynamics.html#module-monc_utils.thermodynamics.thermodynamics" title="monc_utils.thermodynamics.thermodynamics"><code class="xref py py-mod docutils literal notranslate"><span class="pre">thermodynamics</span></code></a> module.
 Examples are:</p>
 <table class="docutils align-default">
 <tbody>
@@ -88,8 +92,8 @@ where the mean is the domain mean.</p></td>
 </table>
 <p>Spatial derivatives can be specified e.g. <code class="docutils literal notranslate"><span class="pre">'dbydx(th)'</span></code>.
 Multiple (nested) derivatives are allowed, e.g. <code class="docutils literal notranslate"><span class="pre">'dbydy(dbydx(th))'</span></code>.
-These are read in using <code class="xref py py-func docutils literal notranslate"><span class="pre">get_data()</span></code> and computed on a native grid, but may be conformed to a requuired grid as per any other variable using <code class="xref py py-func docutils literal notranslate"><span class="pre">get_data_on_grid()</span></code>.
-The derivatives are calculated using <code class="xref py py-mod docutils literal notranslate"><span class="pre">difference_ops</span></code> module that now has general, grid-aware derivative and averaging functions.</p>
+These are read in using <a class="reference internal" href="datain.html#monc_utils.io.datain.get_data" title="monc_utils.io.datain.get_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_data()</span></code></a> and computed on a native grid, but may be conformed to a requuired grid as per any other variable using <a class="reference internal" href="datain.html#monc_utils.io.datain.get_data_on_grid" title="monc_utils.io.datain.get_data_on_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_data_on_grid()</span></code></a>.
+The derivatives are calculated using <a class="reference internal" href="difference_ops.html#module-monc_utils.data_utils.difference_ops" title="monc_utils.data_utils.difference_ops"><code class="xref py py-mod docutils literal notranslate"><span class="pre">difference_ops</span></code></a> module that now has general, grid-aware derivative and averaging functions.</p>
 <div class="admonition-todo admonition" id="id1">
 <p class="admonition-title">Todo</p>
 <p>Code to calculate the deformation field and hence shear and vorticity has also been implemented but needs full integration.</p>
@@ -97,7 +101,13 @@ The derivatives are calculated using <code class="xref py py-mod docutils litera
 </section>
 <section id="version-history">
 <h1>Version History<a class="headerlink" href="#version-history" title="Permalink to this heading">¶</a></h1>
-<p>Latest version is 0.3.0</p>
+<p>Latest version is 0.4.0</p>
+<aside class="topic">
+<p class="topic-title">New at 0.4.0</p>
+<ol class="arabic simple">
+<li><p>Added io_um package.</p></li>
+</ol>
+</aside>
 <aside class="topic">
 <p class="topic-title">New at 0.3.0</p>
 <ol class="arabic simple">
@@ -181,17 +191,20 @@ The derivatives are calculated using <code class="xref py py-mod docutils litera
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="data_utils.html" title="The data_utils sub-package."
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Welcome to monc_utils’s documentation!"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Introduction</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2019, 2020, 2021 Peter Clark.
+        &#169; Copyright 2019-2024 Peter Clark.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>

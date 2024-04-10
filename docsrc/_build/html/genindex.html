@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; monc_utils 0.3.0 documentation</title>
+    <title>Index &#8212; monc_utils 0.4.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -25,7 +25,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>  
@@ -165,15 +165,29 @@
 </li>
       <li><a href="datain.html#monc_utils.io.datain.get_data_on_grid">get_data_on_grid() (in module monc_utils.io.datain)</a>
 </li>
+      <li><a href="datain_um.html#monc_utils.io_um.datain.get_derived_um_vars">get_derived_um_vars() (in module monc_utils.io_um.datain)</a>
+</li>
       <li><a href="datain.html#monc_utils.io.datain.get_derived_vars">get_derived_vars() (in module monc_utils.io.datain)</a>
 </li>
       <li><a href="datain.html#monc_utils.io.datain.get_pref">get_pref() (in module monc_utils.io.datain)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="string_utils.html#monc_utils.data_utils.string_utils.get_string_index">get_string_index() (in module monc_utils.data_utils.string_utils)</a>
 </li>
       <li><a href="datain.html#monc_utils.io.datain.get_thref">get_thref() (in module monc_utils.io.datain)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="datain_um.html#monc_utils.io_um.datain.get_um_and_transform">get_um_and_transform() (in module monc_utils.io_um.datain)</a>
+</li>
+      <li><a href="datain_um.html#monc_utils.io_um.datain.get_um_coords">get_um_coords() (in module monc_utils.io_um.datain)</a>
+</li>
+      <li><a href="datain_um.html#monc_utils.io_um.datain.get_um_data">get_um_data() (in module monc_utils.io_um.datain)</a>
+</li>
+      <li><a href="datain_um.html#monc_utils.io_um.datain.get_um_data_on_grid">get_um_data_on_grid() (in module monc_utils.io_um.datain)</a>
+</li>
+      <li><a href="datain_um.html#monc_utils.io_um.datain.get_um_field">get_um_field() (in module monc_utils.io_um.datain)</a>
+</li>
+      <li><a href="datain_um.html#monc_utils.io_um.datain.get_um_grid_desc">get_um_grid_desc() (in module monc_utils.io_um.datain)</a>
 </li>
       <li><a href="difference_ops.html#monc_utils.data_utils.difference_ops.grid_conform">grid_conform() (in module monc_utils.data_utils.difference_ops)</a>
 </li>
@@ -189,12 +203,14 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="difference_ops.html#monc_utils.data_utils.difference_ops.interpolate_z">interpolate_z() (in module monc_utils.data_utils.difference_ops)</a>
+      <li><a href="datain_um.html#monc_utils.io_um.datain.init_mean">init_mean() (in module monc_utils.io_um.datain)</a>
 </li>
-      <li><a href="thermodynamics.html#monc_utils.thermodynamics.thermodynamics.inv_esat">inv_esat() (in module monc_utils.thermodynamics.thermodynamics)</a>
+      <li><a href="difference_ops.html#monc_utils.data_utils.difference_ops.interpolate_z">interpolate_z() (in module monc_utils.data_utils.difference_ops)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="thermodynamics.html#monc_utils.thermodynamics.thermodynamics.inv_esat">inv_esat() (in module monc_utils.thermodynamics.thermodynamics)</a>
+</li>
       <li><a href="thermodynamics.html#monc_utils.thermodynamics.thermodynamics.inv_esat_ice">inv_esat_ice() (in module monc_utils.thermodynamics.thermodynamics)</a>
 </li>
       <li><a href="thermodynamics.html#monc_utils.thermodynamics.thermodynamics.inv_exner">inv_exner() (in module monc_utils.thermodynamics.thermodynamics)</a>
@@ -242,6 +258,10 @@
         <li><a href="dataout.html#module-monc_utils.io.dataout">monc_utils.io.dataout</a>
 </li>
         <li><a href="file_utils.html#module-monc_utils.io.file_utils">monc_utils.io.file_utils</a>
+</li>
+        <li><a href="datain_um.html#module-monc_utils.io_um">monc_utils.io_um</a>
+</li>
+        <li><a href="datain_um.html#module-monc_utils.io_um.datain">monc_utils.io_um.datain</a>
 </li>
         <li><a href="thermodynamics.html#module-monc_utils.thermodynamics">monc_utils.thermodynamics</a>
 </li>
@@ -315,6 +335,20 @@
 
       <ul>
         <li><a href="file_utils.html#module-monc_utils.io.file_utils">module</a>
+</li>
+      </ul></li>
+      <li>
+    monc_utils.io_um
+
+      <ul>
+        <li><a href="datain_um.html#module-monc_utils.io_um">module</a>
+</li>
+      </ul></li>
+      <li>
+    monc_utils.io_um.datain
+
+      <ul>
+        <li><a href="datain_um.html#module-monc_utils.io_um.datain">module</a>
 </li>
       </ul></li>
       <li>
@@ -485,12 +519,12 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2019, 2020, 2021 Peter Clark.
+        &#169; Copyright 2019-2024 Peter Clark.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>

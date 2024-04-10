@@ -2,7 +2,13 @@
 
 ## [Unreleased](https://github.com/ParaConUK/monc_utils/tree/HEAD)
 
-[Full Changelog](https://github.com/ParaConUK/monc_utils/compare/v0.3.2...HEAD)
+[Full Changelog](https://github.com/ParaConUK/monc_utils/compare/v0.4.0...HEAD)
+
+## [v0.4.0](https://github.com/ParaConUK/monc_utils/tree/v0.4.0)
+
+Added io_um package.
+
+[Full Changelog](https://github.com/ParaConUK/monc_utils/compare/v0.3.2...v0.4.0)
 
 ## [v0.3.2](https://github.com/ParaConUK/monc_utils/tree/v0.3.2)
 

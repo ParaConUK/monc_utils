@@ -1533,10 +1533,10 @@ derived_vars = {
         {'vars': ('th', 'p'),
          'func': temperature,
          'units': 'K'},
-    'th':
-        {'vars': ('T', 'p'),
-         'func': potential_temperature,
-         'units': 'K'},
+#    'th':
+#        {'vars': ('T', 'p'),
+#         'func': potential_temperature,
+#         'units': 'K'},
     'th_m':
         {'vars': ('T', 'p', 'm_vapour'),
          'func': moist_potential_temperature,
@@ -1553,14 +1553,14 @@ derived_vars = {
         {'vars': ('q_total',),
          'func': q_to_mix,
          'units': ''},
-    'q_vapour':
-        {'vars': ('m_vapour',),
-         'func': mix_to_q,
-         'units': 'kg/kg'},
-    'q_cloud_liquid_mass':
-        {'vars': ('m_cloud_liquid_mass',),
-         'func': mix_to_q,
-         'units': 'kg/kg'},
+#    'q_vapour':
+#        {'vars': ('m_vapour',),
+#         'func': mix_to_q,
+#         'units': 'kg/kg'},
+#    'q_cloud_liquid_mass':
+#        {'vars': ('m_cloud_liquid_mass',),
+#         'func': mix_to_q,
+#         'units': 'kg/kg'},
     't_lcl_td':
         {'vars': ('T', 'T_dew'),
          'func': t_lcl_td,

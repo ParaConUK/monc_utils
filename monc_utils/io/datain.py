@@ -140,7 +140,6 @@ def correct_grid_and_units(var_name: str,
         if 'zn' in vard.dims:
             vard = vard.rename({'zn':'z_p'})
 
-
         if 'units' not in vard.attrs:        
             vard.attrs['units'] = ''
 
@@ -265,7 +264,6 @@ def get_data(source_dataset, ref_dataset, var_name: str,
             pref = get_pref(source_dataset, ref_dataset,
                             options=options)
             vard += pref
-
 
     except KeyError:
                
