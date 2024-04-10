@@ -21,7 +21,7 @@ which can be edited. Please commit code improvements and discuss merging with
 the master branch with Peter Clark and other users.
 
 New in version 0.4.0
-1.Added io_um package.
+1. Added io_um package.
 
 New in version 0.3.2
 1. Bugfix to deformation.
