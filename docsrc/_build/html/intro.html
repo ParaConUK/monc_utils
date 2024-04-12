@@ -72,19 +72,19 @@ Similarly, <code class="docutils literal notranslate"><span class="pre">'z'</spa
 Examples are:</p>
 <table class="docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p>‘th_L’</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'th_L'</span></code></p></td>
 <td><p>Liquid water potential temperature  <img class="math" src="_images/math/5aedef230ab5aab17c013808b691bfe393cec831.png" alt="\theta_L"/>.</p></td>
 </tr>
-<tr class="row-even"><td><p>‘th_v’</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'th_v'</span></code></p></td>
 <td><p>Virtual potential temperature  <img class="math" src="_images/math/f0ec08091b2bd6bce618e4a034b692d310c0fe43.png" alt="\theta_v"/>.</p></td>
 </tr>
-<tr class="row-odd"><td><p>‘th_w’</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'th_w'</span></code></p></td>
 <td><p>Wet bulb potential temperature  <img class="math" src="_images/math/654b7413ae4e620cf27d9c99e0d8c0bd57c4d184.png" alt="\theta_w"/>.</p></td>
 </tr>
-<tr class="row-even"><td><p>‘q_total’</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'q_total'</span></code></p></td>
 <td><p>Total water  <img class="math" src="_images/math/2924b03f0c712be788a7e886b5bc4e04bcb709cc.png" alt="q_t"/>.</p></td>
 </tr>
-<tr class="row-odd"><td><p>‘buoyancy’</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'buoyancy'</span></code></p></td>
 <td><p><img class="math" src="_images/math/aabe769e638607494cc5e3763372fd6e5a4ca7fe.png" alt="(g/\overline{\theta_v})*(\theta_v-\overline{\theta_v})"/>,
 where the mean is the domain mean.</p></td>
 </tr>
@@ -94,6 +94,12 @@ where the mean is the domain mean.</p></td>
 Multiple (nested) derivatives are allowed, e.g. <code class="docutils literal notranslate"><span class="pre">'dbydy(dbydx(th))'</span></code>.
 These are read in using <a class="reference internal" href="datain.html#monc_utils.io.datain.get_data" title="monc_utils.io.datain.get_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_data()</span></code></a> and computed on a native grid, but may be conformed to a requuired grid as per any other variable using <a class="reference internal" href="datain.html#monc_utils.io.datain.get_data_on_grid" title="monc_utils.io.datain.get_data_on_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_data_on_grid()</span></code></a>.
 The derivatives are calculated using <a class="reference internal" href="difference_ops.html#module-monc_utils.data_utils.difference_ops" title="monc_utils.data_utils.difference_ops"><code class="xref py py-mod docutils literal notranslate"><span class="pre">difference_ops</span></code></a> module that now has general, grid-aware derivative and averaging functions.</p>
+<aside class="topic">
+<p class="topic-title">New at 0.4.0</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">io_um</span></code> package reads data from idealised UM runs NetCDF output in a form similar to MONC, so that all of the input transforms can be used.
+It adds the <code class="docutils literal notranslate"><span class="pre">'ref'</span></code> suffix that reads in just the first time and returns a horizontal average. This is provided to approximate the MONC reference state used especially to compute buoyancy.
+<strong>This functionality is not available for MONC (and should not be needed)</strong>.</p>
+</aside>
 <div class="admonition-todo admonition" id="id1">
 <p class="admonition-title">Todo</p>
 <p>Code to calculate the deformation field and hence shear and vorticity has also been implemented but needs full integration.</p>
@@ -105,7 +111,7 @@ The derivatives are calculated using <a class="reference internal" href="differe
 <aside class="topic">
 <p class="topic-title">New at 0.4.0</p>
 <ol class="arabic simple">
-<li><p>Added io_um package.</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">io_um</span></code> package.</p></li>
 </ol>
 </aside>
 <aside class="topic">
