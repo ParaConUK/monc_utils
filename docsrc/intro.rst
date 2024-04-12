@@ -32,23 +32,29 @@ In order to facilitate comparisons and products, tools have been coded (efficien
 A number of derived variables have been implemented that are calculated provided the required inputs are available. These are provided in the :py:mod:`~monc_utils.thermodynamics.thermodynamics` module. 
 Examples are:
 
-+-----------+---------------------------------------------------------------+
-|'th_L'     | Liquid water potential temperature  :math:`\theta_L`.         |
-+-----------+---------------------------------------------------------------+
-|'th_v'     | Virtual potential temperature  :math:`\theta_v`.              |
-+-----------+---------------------------------------------------------------+
-|'th_w'     | Wet bulb potential temperature  :math:`\theta_w`.             |
-+-----------+---------------------------------------------------------------+
-|'q_total'  | Total water  :math:`q_t`.                                     |
-+-----------+---------------------------------------------------------------+
-|'buoyancy' |:math:`(g/\overline{\theta_v})*(\theta_v-\overline{\theta_v})`,|
-|           |where the mean is the domain mean.                             |
-+-----------+---------------------------------------------------------------+
++---------------+---------------------------------------------------------------+
+|``'th_L'``     | Liquid water potential temperature  :math:`\theta_L`.         |
++---------------+---------------------------------------------------------------+
+|``'th_v'``     | Virtual potential temperature  :math:`\theta_v`.              |
++---------------+---------------------------------------------------------------+
+|``'th_w'``     | Wet bulb potential temperature  :math:`\theta_w`.             |
++---------------+---------------------------------------------------------------+
+|``'q_total'``  | Total water  :math:`q_t`.                                     |
++---------------+---------------------------------------------------------------+
+|``'buoyancy'`` |:math:`(g/\overline{\theta_v})*(\theta_v-\overline{\theta_v})`,|
+|               |where the mean is the domain mean.                             |
++---------------+---------------------------------------------------------------+
 
 Spatial derivatives can be specified e.g. ``'dbydx(th)'``.
 Multiple (nested) derivatives are allowed, e.g. ``'dbydy(dbydx(th))'``.
 These are read in using :py:func:`~monc_utils.io.datain.get_data` and computed on a native grid, but may be conformed to a requuired grid as per any other variable using :py:func:`~monc_utils.io.datain.get_data_on_grid`.
 The derivatives are calculated using :py:mod:`~monc_utils.data_utils.difference_ops` module that now has general, grid-aware derivative and averaging functions.
+
+.. topic:: New at 0.4.0
+
+	The ``io_um`` package reads data from idealised UM runs NetCDF output in a form similar to MONC, so that all of the input transforms can be used. 
+	It adds the ``'ref'`` suffix that reads in just the first time and returns a horizontal average. This is provided to approximate the MONC reference state used especially to compute buoyancy. 
+	**This functionality is not available for MONC (and should not be needed)**. 
 
 .. todo:: Code to calculate the deformation field and hence shear and vorticity has also been implemented but needs full integration.
 
@@ -60,7 +66,7 @@ Latest version is 0.4.0
 
 .. topic:: New at 0.4.0
 
-	#. Added io_um package.
+	#. Added ``io_um`` package.
 
 
 .. topic:: New at 0.3.0
