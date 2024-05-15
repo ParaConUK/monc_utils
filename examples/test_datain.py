@@ -27,12 +27,13 @@ dask.config.set({"array.slicing.split_large_chunks": True})
 test_case = 0
 
 # onedrive = '"C:/Users/paclk/OneDrive - University of Reading/"
-onedrive = "C:/Users/xm904103/OneDrive - University of Reading/"
+#onedrive = "C:/Users/xm904103/OneDrive - University of Reading/"
+onedrive = "E:/Data/"
 
 if test_case == 0:
     config_file = 'config_test_case_0.yaml'
-    indir = onedrive+'ug_project_data/Data/'
-    odir = onedrive+'ug_project_data/Data/'
+    indir = onedrive+'ug_project_data/'
+    odir = onedrive+'ug_project_data/'
 #    file = 'diagnostics_3d_ts_21600.nc'
 #    ref_file = 'diagnostics_ts_21600.nc'
     file = 'diagnostics_3d_ts_23400.nc'
@@ -102,16 +103,16 @@ os.makedirs(odir, exist_ok = True)
 #      ]
 
 
-# var_list = [
+var_list = [
 #     "saturation",
 #     "tracer",
 #     "th_L",
 #     "q_vapour",
-#     "q_cloud_liquid_mass",
+    "q_cloud_liquid_mass",
 #     "q_total",
-#      ]
+      ]
 
-var_list = [
+# var_list = [
     # "dbydx(th)",
     # "dbydy(th)",
     # "dbydz(th)",
@@ -127,13 +128,13 @@ var_list = [
     # "th_L",
     # "th_w",
     # "th_s",
-    "th_sw",
+    # "th_sw",
     # "p",
     # "dbydx(p)",
     # "dbydy(p)",
     # "dbydz(p)",
     # "dbydz(th_L)",
-    ]
+    # ]
 
 fname = 'test_datain'
 
@@ -200,4 +201,36 @@ for var_name in var_list:
             op_var.isel({tvar:it, yvar:iy, zvar:slice(1,None)}).plot.contourf(
                 figsize=(12,10), levels=lev, x=xvar)
 
+plt.show()
+
+#%%
+
+c = op_var.copy()
+
+c = c.where(op_var >= 1E-5, 0)
+c = c.where(op_var <  1E-5, 1)
+
+c.name = 'Cloud'
+cf = c.copy()
+cf_mean = cf.mean(dim=['x_p','y_p'])
+
+cf_mean.name = 'Cloud Fraction'
+
+#%%
+
+valid_cloud = cf_mean.where(cf_mean > 0, drop=True).compute()
+
+top = [p.dropna(dim='z_p').z_p[-1] for t,p in valid_cloud.groupby('time')]
+bot = [p.dropna(dim='z_p').z_p[0] for t,p in valid_cloud.groupby('time')]
+
+
+ctop = xr.concat(top, dim='time')  
+ctop.name = 'Cloud Top'  
+cbot = xr.concat(bot, dim='time')    
+cbot.name = 'Cloud Base' 
+
+ctop.plot(x='time', label='Cloud Top')
+cbot.plot(x='time', label='Cloud Base')
+
+ 
 plt.show()

@@ -20,7 +20,7 @@ from loguru import logger
 
 stash_map = { 'u'                  : 'm01s00i002', 
               'v'                  : 'm01s00i003',
-              'w'                  : 'm01s00i254',
+              'w'                  : 'm01s00i150',
               'th'                 : 'm01s00i004',
               'q_vapour'           : 'm01s00i010', 
               'q_cloud_liquid_mass': 'm01s00i254',
