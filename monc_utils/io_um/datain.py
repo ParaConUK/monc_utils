@@ -108,6 +108,7 @@ def get_um_field(ds, stash_code: str):
                     c = field.coords[old_coord].values
                     c[-1] = c[-2]*2 - c[-3]
                     field = field.assign_coords({old_coord:c})
+                    new_coord_full = 'x_u'
                 if old_coord == 'latitude_cu': 
                     new_coord_full = 'y_p'
                 if old_coord == 'longitude_cv':
@@ -118,8 +119,9 @@ def get_um_field(ds, stash_code: str):
                     c = field.coords[old_coord].values
                     c[-1] = c[-2]*2 - c[-3]
                     field = field.assign_coords({old_coord:c})
+                    new_coord_full = 'y_v'
                 if field.attrs['grid_mapping'] == 'grid_crs':
-                    new_coord_values = field.coords[old_coord].values * 1000
+                    new_coord_values = np.round(field.coords[old_coord].values  * 1000)
                 else:
                     new_coord_values = field.coords[old_coord].values                    
                 field = field.assign_coords(
@@ -136,6 +138,13 @@ def get_um_field(ds, stash_code: str):
             
             field = field.assign_coords(
                 {'elapsed_time':(new_coord_full, hours.astype(np.float32))})
+
+        if 'bounds' in field[new_coord_full].attrs:
+            field[new_coord_full].attrs.pop('bounds')
+            
+    for c in field.coords:
+        if c in field.dims or c == 'elapsed_time': continue
+        field = field.drop_vars(c)
     
     return field
 
@@ -232,7 +241,7 @@ def get_um_data(source_dataset, var_name: str,
 
         elif options is not None \
             and 'aliases' in options \
-            and var_name in options['aliases']:
+            and var_name in options.get('aliases',[]):
             for alias in options['aliases'][var_name]:
                 if alias in source_dataset:
                     logger.info(f'Retrieving {alias:s} as {var_name:s}.')
@@ -260,12 +269,12 @@ def get_um_data(source_dataset, var_name: str,
             vard = get_derived_um_vars(source_dataset,
                                     'exner', th.derived_vars,
                                     options=options)
-            vard= init_mean(vard)
+            vard = init_mean(vard)
             vard.name = var_name  
             
         elif var_name[-3:] == 'ref':
             vard = get_um_data(source_dataset, var_name[:-3])
-            vard= init_mean(vard)
+            vard = init_mean(vard)
             vard.name = var_name  
                                     
         elif var_name in th.derived_vars:
@@ -367,6 +376,7 @@ def get_um_and_transform(source_dataset, var_name,
 def get_um_data_on_grid(source_dataset, var_name,
                         derived_dataset=None,
                         options=None,
+                        rename_time=False,
                         grid='p') :
     """
     Find data from source_dataset remapped to destination grid.
@@ -416,7 +426,7 @@ def get_um_data_on_grid(source_dataset, var_name,
             var_name = var_name[:-5]
             op_var_name = var_name[:-5] + ongrid
 
-    if options is not None and options['save_all'].lower() == 'yes':
+    if options is not None and options.get('save_all', 'yes').lower() == 'yes':
 
         if derived_dataset is not None \
             and op_var_name in derived_dataset['ds'].variables:
@@ -428,8 +438,13 @@ def get_um_data_on_grid(source_dataset, var_name,
     op_var = get_um_and_transform(source_dataset,
                                   var_name, options=options, grid=grid)
     op_var.name = op_var_name
-
-    if options is not None and options['save_all'].lower() == 'yes':
+    
+    if rename_time:
+        [itime] = get_string_index(op_var.dims, ['time'])
+        if itime is not None:
+            op_var = op_var.rename({op_var.dims[itime]:'time'})
+            
+    if options is not None and options.get('save_all', 'yes').lower() == 'yes':
 
         if derived_dataset is not None \
             and op_var_name not in derived_dataset['ds'].variables:

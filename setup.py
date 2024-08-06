@@ -17,7 +17,7 @@ setup(
     # Needed for dependencies
     install_requires=['numpy', 'scipy', 'dask', 'xarray'],
     # *strongly* suggested for sharing
-    version='0.4.0',
+    version='0.4.1',
     # The license can be anything you like
     license='MIT',
     description='python code to improve io and compute useful quantities from MONC output.',

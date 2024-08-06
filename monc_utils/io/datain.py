@@ -238,7 +238,7 @@ def get_data(source_dataset, ref_dataset, var_name: str,
 
         elif options is not None \
             and 'aliases' in options \
-            and var_name in options['aliases']:
+            and var_name in options.get('aliases',[]):
             for alias in options['aliases'][var_name]:
                 if alias in source_dataset:
                     logger.info(f'Retrieving {alias:s} as {var_name:s}.')
@@ -440,7 +440,7 @@ def get_data_on_grid(source_dataset, ref_dataset, var_name,
             var_name = var_name[:-5]
             op_var_name = var_name[:-5] + ongrid
 
-    if options is not None and options['save_all'].lower() == 'yes':
+    if options is not None and options.get('save_all','yes').lower() == 'yes':
 
         if derived_dataset is not None \
             and op_var_name in derived_dataset['ds'].variables:
@@ -453,7 +453,7 @@ def get_data_on_grid(source_dataset, ref_dataset, var_name,
                                var_name, options=options, grid=grid)
     op_var.name = op_var_name
 
-    if options is not None and options['save_all'].lower() == 'yes':
+    if options is not None and options.get('save_all', 'yes').lower() == 'yes':
 
         if derived_dataset is not None \
             and op_var_name not in derived_dataset['ds'].variables:
