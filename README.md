@@ -20,6 +20,9 @@ This will install as if into the standard library but using the cloned code
 which can be edited. Please commit code improvements and discuss merging with 
 the master branch with Peter Clark and other users.
 
+New in version 0.4.1
+1. Minor fix to io_um package - horizontal coords are rounded to nearest m to ensure compatibility between interpolated and native fields. We need a better solution.
+
 New in version 0.4.0
 1. Added io_um package.
 

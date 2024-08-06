@@ -59,7 +59,7 @@ def exec_fn(fn: typing.Callable,
     new xarray.DataArray
 
     """
-    print(type(field.data))
+#    print(type(field.data))
     if monc_utils.global_config['no_dask'] or type(field.data) is np.ndarray:
         field = fn(field)
     else:

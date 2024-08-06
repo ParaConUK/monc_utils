@@ -59,7 +59,8 @@ def save_field(dataset, field, write_to_file=True):
         logger.info(f"{field.name} already in {fn}")
     return dataset['ds'][field.name]
 
-def setup_child_file(source_file, destdir, outtag, options=None, override=False) :
+def setup_child_file(source_file, destdir, outtag, options=None, 
+                     override=False, keep_coords=None ) :
     """
     Create NetCDF dataset for derived data in destdir.
 
@@ -75,6 +76,8 @@ def setup_child_file(source_file, destdir, outtag, options=None, override=False)
         Options dictionary
     override=False  : bool
         if True force creation of file
+    keep_coords=None     : dict | None
+        coordinates to use for child file
 
     Returns
     -------
@@ -93,9 +96,13 @@ def setup_child_file(source_file, destdir, outtag, options=None, override=False)
     else:
         raise FileNotFoundError(f"Cannot find file {source_path}.")
         
-    if options == None:
+    if options is None:
         options = {}
-    
+        
+    if keep_coords is None:
+        clist = ['z','zn']
+        keep_coords = {c:ds.coords[c] for c in clist if c in ds.coords }
+     
     derived_dataset_name = source_path.stem
 
     if monc_utils.global_config['l_slurm_job_tag'] \
@@ -119,8 +126,7 @@ def setup_child_file(source_file, destdir, outtag, options=None, override=False)
             logger.info(f"Overwriting file {derived_dataset_name}.")
         exists = False
 
-        derived_dataset = xr.Dataset(coords =
-                        {'z':ds.coords['z'],'zn':ds.coords['zn']})
+        derived_dataset = xr.Dataset(coords = keep_coords)
 
         # Ensure bool, dict, and None items can be stored
         atts_out = {**atts, **monc_utils.global_config, **options}
