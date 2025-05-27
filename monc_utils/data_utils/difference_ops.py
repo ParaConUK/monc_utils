@@ -31,13 +31,22 @@ import warnings
 from loguru import logger
 
 warnings.filterwarnings("ignore", category=FutureWarning,
-                                   module='xarray.core.missing')
+                                  module='xarray.core.missing')
 
+difference_ops_options = {'cartesian':False,
+                          'xy_periodic':False,
+                         }
 
 grid_def = { 'p':('x_p', 'y_p', 'z_p'),
              'u':('x_u', 'y_p', 'z_p'),
              'v':('x_p', 'y_v', 'z_p'),
              'w':('x_p', 'y_p', 'z_w')}
+
+def set_difference_ops_options(opts):
+    global difference_ops_options
+    difference_ops_options.update(opts)
+    logger.info(f'{difference_ops_options=}')
+    return
 
 
 def exec_fn(fn: typing.Callable, 

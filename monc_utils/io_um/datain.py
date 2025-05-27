@@ -4,7 +4,6 @@ Created on Mon Aug  2 11:01:11 2021.
 @author: Peter Clark
 """
 import numpy as np
-import xarray
 import datetime
 from monc_utils.data_utils.string_utils import get_string_index
 from monc_utils.io.dataout import save_field
@@ -12,22 +11,28 @@ from monc_utils.data_utils.dask_utils import re_chunk
 
 import monc_utils.data_utils.difference_ops as do
 import monc_utils.thermodynamics.thermodynamics as th
-import monc_utils.thermodynamics.thermodynamics_constants as thc
 import monc_utils
 import re
 from loguru import logger
+
+um_datain_options = {'cartesian':False,
+                     'xy_periodic':False,
+                     'ref_is_init_mean':True,
+                     }
 
 
 stash_map = { 'u'                  : 'm01s00i002', 
               'v'                  : 'm01s00i003',
               'w'                  : 'm01s00i150',
               'th'                 : 'm01s00i004',
+              'air_potential_temperature': 'm01s00i004',
+              'surface_altitude'   : 'm01s00i033',
               'q_vapour'           : 'm01s00i010', 
-              'q_cloud_liquid_mass': 'm01s00i254',
+              'specific_humidity'  : 'm01s00i010',
               'q_ice_mass'         : 'm01s00i012', 
+              'q_cloud_liquid_mass': 'm01s00i254',
               'exner_rho'          : 'm01s00i255',
               'exner'              : 'm01s00i406',
-              'rho'                : 'm01s15i271',
               'mr_liquid_cloud'    : 'm01s00i392',
               'mr_ice cloud'       : 'm01s00i393',
               'mr_rain'            : 'm01s00i394',
@@ -39,6 +44,17 @@ stash_map = { 'u'                  : 'm01s00i002',
               'p_surf'             : 'm01s00i409',
               'cloud fraction'     : 'm01s00i266',
               'rainrate'           : 'm01s04i203',
+              "traj_tracer_xr"     : 'm01s00i700',
+              "traj_tracer_xi"     : 'm01s00i701',
+              "traj_tracer_yr"     : 'm01s00i702',
+              "traj_tracer_yi"     : 'm01s00i703',
+              "traj_tracer_zr"     : 'm01s00i704',
+              "upward_heat_flux"   : 'm01s03i216',
+              "upward_water_vapour_flux" : 'm01s03i222',
+              'rho'                : 'm01s15i271',
+              'u_b'                : 'm01s15i002',
+              'v_b'                : 'm01s15i003',
+              'air_temperature'    : 'm01s16i004',
             }
 
 PGRID = [False,False,False]
@@ -46,45 +62,122 @@ UGRID = [True,False,False]
 VGRID = [False,True,False]
 WGRID = [False,False,True]
 TGRID = WGRID
+BGRID = [True,True,False]
 
-var_properties = {"u":{"grid":UGRID,
-                       "units":'m.s-1'},
-                  "v":{"grid":VGRID,
-                       "units":'m.s-1'},
-                  "w":{"grid":WGRID,
-                       "units":'m.s-1'},
-                  "th":{"grid":TGRID,
-                        "units":'K'},
-                  "p":{"grid":PGRID,
-                       "units":'Pa'},
-                  "q_vapour":{"grid":TGRID,
-                              "units":'kg/kg'},
-                  "q_cloud_liquid_mass":{"grid":TGRID,
-                                         "units":'kg/kg'},
-                  "q_ice_mass":{"grid":TGRID,
-                                "units":'kg/kg'},
-                  }
+
+def set_um_datain_options(opts):
+    global um_datain_options
+    um_datain_options.update(opts)
+    logger.info(f'{um_datain_options=}')
+    return
     
-def get_um_field(ds, stash_code: str):
-    """
-    Read DataArray corresponding to stash_code from xarray dataset,
-    Changing coordinates to more MONC-like.
-
-    Parameters
-    ----------
-    ds : xarray Dataset
-        Input (at least 2D) data.
-    stash_code : str
-        Of form 'm01snnimmm' with nn = section and mmm item.
-
-    Returns
-    -------
-    field : xarray.core.dataarray.DataArray
-        Required data.
-
-    """
-    field = ds['STASH_'+stash_code] 
+def set_um_stashmap(stash_map_update):
+    global stash_map
+    stash_map.update(stash_map_update)
+    logger.info('Updated stash_map.')
+    return
     
+    
+def clean_dims(field, keep_dims=None):
+    
+    if keep_dims is None: keep_dims = []
+
+    for c in field.coords:
+        if(c in field.dims or c == 'elapsed_time' 
+           or any([d in c for d in keep_dims]) ): continue
+        field = field.drop_vars(c)
+        
+    return field
+
+def get_coord(field, dimname):
+    
+    full_dim = [d for d in field.dims if dimname in d]
+    if len(full_dim) > 0 : 
+        full_dim = full_dim[0]
+    else:
+        full_dim = None
+        
+    return full_dim
+
+def coords_to_latlon(field, offsets=None):
+    
+    var_properties = {"u":{"grid":UGRID,
+                           "units":'m.s-1'},
+                      "v":{"grid":VGRID,
+                           "units":'m.s-1'},
+                      "w":{"grid":WGRID,
+                           "units":'m.s-1'},
+                      "th":{"grid":TGRID,
+                            "units":'K'},
+                      "p":{"grid":PGRID,
+                           "units":'Pa'},
+                      "q_vapour":{"grid":TGRID,
+                                  "units":'kg/kg'},
+                      "q_cloud_liquid_mass":{"grid":TGRID,
+                                             "units":'kg/kg'},
+                      "q_ice_mass":{"grid":TGRID,
+                                    "units":'kg/kg'},
+                      "u_b":{"grid":BGRID,
+                                             "units":'m.s-1'},
+                      "v_b":{"grid":BGRID,
+                                             "units":'m.s-1'},
+                      }
+        
+    if offsets is None:
+        offsets={'x':0, 'y':0, 'z':0}
+    
+    var_name = field.name
+    
+    in_properties = var_properties.get(var_name, {"grid":TGRID,"units":''})
+        
+    in_grid_type = in_properties['grid']
+
+    swap_map = {}
+    for i, (coord, alt_point) in enumerate(
+            zip(['longitude','latitude','model_level'],
+                ['u', 'v', 'w'])):
+        
+        c = get_coord(field, coord)
+            
+        if c is not None:
+            if coord in 'model_level':
+                base_coord_vals = field.coords[c].values.astype("float32")
+            else:
+                base_coord_vals = np.arange(field.sizes[c], dtype="float32")
+            if in_grid_type[i]:
+                
+                new_name = f'{c}_{alt_point}'
+                coord_vals = base_coord_vals + offsets['xyz'[i]] + [-0.5, -0.5, 0.0][i]
+                new_coord = 'xyz'[i] + f'_{alt_point}'
+                
+            else:
+                
+                new_name = f'{c}_p'
+                coord_vals = base_coord_vals + offsets['xyz'[i]] + [0.0, 0.0, -0.5][i]           
+                new_coord = 'xyz'[i] + '_p'
+                
+            field = field.assign_coords({new_coord: (c, coord_vals)})
+            field = field.rename({c:new_name})
+            swap_map[new_name] = new_coord
+
+    field = field.swap_dims(swap_map)
+
+
+    if 'units' not in field.attrs:        
+        field.attrs['units'] = in_properties['units']
+            
+    return field
+    
+def coords_to_cartesian(field):
+    
+    def _adjust_cyclic_data_order(field, dimname, vname):
+        logger.info(f"Rolling {vname} data")
+        field = field.roll({dimname:-1}, roll_coords=True) 
+        c = field.coords[old_coord].values
+        c[-1] = c[-2]*2 - c[-3]
+        field = field.assign_coords({old_coord:c})
+        return field
+        
     for new_coord, old_coord in zip(('x', 'y', 'z', 'time'), 
                                     get_um_coords(field)):
         
@@ -95,6 +188,7 @@ def get_um_field(ds, stash_code: str):
             vert_dim = [d for d in field.dims if 'lev_eta' in d][0]
             if 'rho' in vert_dim: new_coord_full = 'z_p'
             else: new_coord_full = 'z_w'
+            
             field = field.rename({old_coord:new_coord_full})
             field = field.swap_dims({vert_dim:new_coord_full})
             
@@ -102,34 +196,32 @@ def get_um_field(ds, stash_code: str):
             
             new_coord_full = f'{new_coord}{get_um_grid_desc(old_coord)}'
             if new_coord in 'xy':
+                
                 if old_coord == 'longitude_cu':
-                    logger.info("Rolling u data")
-                    field = field.roll(longitude_cu=-1, roll_coords=True)
-                    c = field.coords[old_coord].values
-                    c[-1] = c[-2]*2 - c[-3]
-                    field = field.assign_coords({old_coord:c})
+                    field = _adjust_cyclic_data_order(field, old_coord, 'u')
                     new_coord_full = 'x_u'
+                    
                 if old_coord == 'latitude_cu': 
                     new_coord_full = 'y_p'
+                    
                 if old_coord == 'longitude_cv':
                     new_coord_full = 'x_p'
+                    
                 if old_coord == 'latitude_cv':
-                    logger.info("Rolling v data")
-                    field = field.roll(latitude_cv=-1, roll_coords=True) 
-                    c = field.coords[old_coord].values
-                    c[-1] = c[-2]*2 - c[-3]
-                    field = field.assign_coords({old_coord:c})
+                    field = _adjust_cyclic_data_order(field, old_coord, 'v')
                     new_coord_full = 'y_v'
+                    
                 if field.attrs['grid_mapping'] == 'grid_crs':
                     new_coord_values = np.round(field.coords[old_coord].values  * 1000)
                 else:
-                    new_coord_values = field.coords[old_coord].values                    
+                    new_coord_values = field.coords[old_coord].values 
+                    
                 field = field.assign_coords(
-                    {new_coord_full: (old_coord, new_coord_values)})                    
+                    {new_coord_full: (old_coord, new_coord_values)}) 
+                   
                 field = field.swap_dims({old_coord:new_coord_full})
             else:
-                field = field.rename({old_coord:new_coord_full})
-            
+                field = field.rename({old_coord:new_coord_full})          
             
         if new_coord == 'time':    
             hours = (field[new_coord_full].values 
@@ -142,14 +234,60 @@ def get_um_field(ds, stash_code: str):
         if 'bounds' in field[new_coord_full].attrs:
             field[new_coord_full].attrs.pop('bounds')
             
-    for c in field.coords:
-        if c in field.dims or c == 'elapsed_time': continue
-        field = field.drop_vars(c)
+    return field
+    
+def get_um_field(ds, stash:str=None, name:str=None):
+    """
+    Read DataArray corresponding to stash_code from xarray dataset,
+    Changing coordinates to more MONC-like.
+
+    Parameters
+    ----------
+    ds : xarray Dataset
+        Input (at least 2D) data.
+    name : str
+        Actual variable name
+    stash : str
+        Of form 'm01snnimmm' with nn = section and mmm item.
+
+    Returns
+    -------
+    field : xarray.core.dataarray.DataArray
+        Required data.
+
+    """
+    
+    cartesian = um_datain_options.get('cartesian', True)  
+    
+    keep_dims = um_datain_options.get('keep_dims', [])
+    
+    if name is None:
+        if stash is None:
+            raise ValueError('No field id provided.')
+        else:
+            if stash in ds.data_vars:
+                name = stash
+            elif f'STASH_{stash}' in ds.data_vars:
+                name = f'STASH_{stash}'
+            else:
+                raise ValueError(f'field id {stash} not in dataset.')
+    field = ds[name] 
+                
+    if cartesian:
+        field = coords_to_cartesian(field)
+        field.attrs['xy_periodic'] = True
+        field.attrs['cartesian'] = True
+    else:
+        field = coords_to_latlon(field)
+        field.attrs['xy_periodic'] = False
+        field.attrs['cartesian'] = False
+                 
+    field = clean_dims(field, keep_dims=keep_dims)
     
     return field
 
 def get_derived_um_vars(source_dataset, 
-                     var_name: str, derived_vars: dict, options: dict=None):
+                        var_name: str, derived_vars: dict, options: dict=None):
     """
     Get data from source_dataset and compute required variable.
 
@@ -188,7 +326,8 @@ def get_derived_um_vars(source_dataset,
     vard.attrs['units'] = dv['units']
     return vard
     
-def get_um_data(source_dataset, var_name: str,
+def get_um_data(source_dataset,
+                var_name: str,
                 options: dict=None,
                 allow_none: bool=False) :
     """
@@ -213,8 +352,6 @@ def get_um_data(source_dataset, var_name: str,
     ----------
     source_dataset : xarray Dataset
         Input (at least 2D) data.
-    ref_dataset :  xarray Dataset
-        Contains reference profiles. Can be None.
     var_name : str
         Name of variable to retrieve.
     options : dict (optional - default=None)
@@ -233,24 +370,27 @@ def get_um_data(source_dataset, var_name: str,
     logger.info(f'Retrieving {var_name:s}.')
     try:
         if var_name in source_dataset:
-            vard = source_dataset[var_name]
+            vard = get_um_field(source_dataset, name=var_name)
             
         elif var_name in stash_map:
-            vard = get_um_field(source_dataset, stash_map[var_name])
+            vard = get_um_field(source_dataset, stash=stash_map[var_name])
             vard.name = var_name           
 
         elif options is not None \
             and 'aliases' in options \
             and var_name in options.get('aliases',[]):
+                
             for alias in options['aliases'][var_name]:
                 if alias in source_dataset:
                     logger.info(f'Retrieving {alias:s} as {var_name:s}.')
-                    vard = source_dataset[alias]
+                    vard = get_um_field(source_dataset, 
+                                        name=alias)
                     vard.name = var_name
                     break
                 elif alias in stash_map:
                     logger.info(f'Retrieving {alias:s} as {stash_map[var_name]:s}.')
-                    vard = get_um_field(source_dataset, stash_map[var_name])
+                    vard = get_um_field(source_dataset, 
+                                        stash=stash_map[var_name])
                     vard.name = var_name           
                     break
             else:
@@ -269,19 +409,20 @@ def get_um_data(source_dataset, var_name: str,
             vard = get_derived_um_vars(source_dataset,
                                     'exner', th.derived_vars,
                                     options=options)
-            vard = init_mean(vard)
+            vard = get_mean(vard)
             vard.name = var_name  
             
         elif var_name[-3:] == 'ref':
             vard = get_um_data(source_dataset, var_name[:-3])
-            vard = init_mean(vard)
+            vard = get_mean(vard)
             vard.name = var_name  
                                     
         elif var_name in th.derived_vars:
 
             vard = get_derived_um_vars(source_dataset, 
-                                    var_name, th.derived_vars,
-                                    options=options)
+                                       var_name, 
+                                       th.derived_vars,
+                                       options=options)
             
         else:
             
@@ -347,23 +488,30 @@ def get_um_and_transform(source_dataset, var_name,
     @author: Peter Clark
 
     """
+    def _get_mapped_coord(source_dataset, c_aux, c_main, c_new):
+        if c_aux in source_dataset.coords:
+            c = source_dataset.coords[c_aux].rename({c_aux:c_new})
+            c = c.swap_dims({c_main:c_new})
+        elif c_main in source_dataset.dims:
+            c = source_dataset.coords[c_main]
+        else:
+            raise KeyError(f"Cannot find {c} in dataset.")
+        c.name = c_new
+        return clean_dims(c)
+        
+    
     var = get_um_data(source_dataset, var_name, options=options)
-    if "thlev_zsea_theta" in source_dataset.coords:
-        z_w = source_dataset.coords["thlev_zsea_theta"].rename(
-                                                   {'thlev_zsea_theta':'z_w'})
-        z_w = z_w.swap_dims({'thlev_eta_theta':'z_w'})
-    elif "z_w" in source_dataset.dims:
-        z_w = source_dataset.coords["z_w"]
-    else:
-        raise KeyError("Cannot find z_w in dataset.")
-    if "rholev_zsea_rho" in source_dataset.coords:
-        z_p = source_dataset["rholev_zsea_rho"].rename({'rholev_zsea_rho':'z_p'})
-        z_p = z_p.swap_dims({'rholev_eta_rho':'z_p'})
-    elif "z_p" in source_dataset.dims:
-        z_p = source_dataset["z_p"]
-    else:
-        raise KeyError("Cannot find z_p in dataset.")
-
+    
+    z_w = _get_mapped_coord(source_dataset, 
+                            'thlev_zsea_theta', 
+                            'thlev_eta_theta',
+                            'z_w')
+    
+    z_p = _get_mapped_coord(source_dataset,
+                            'rholev_zsea_rho',
+                            'rholev_eta_rho',
+                            'z_p')
+    
     var = do.grid_conform(var, z_w, z_p, grid = grid )
 
     # Re-chunk data if using dask
@@ -452,11 +600,12 @@ def get_um_data_on_grid(source_dataset, var_name,
 
     return op_var
 
-def init_mean(vard):
-    [itime] = get_string_index(vard.dims, ['time'])
-    if itime is not None:
-        tvar = vard.dims[itime]
-        vard = vard.isel({tvar:0})
+def get_mean(vard):
+    if um_datain_options['ref_is_init_mean']:
+        [itime] = get_string_index(vard.dims, ['time'])
+        if itime is not None:
+            tvar = vard.dims[itime]
+            vard = vard.isel({tvar:0})
         
     [ix, iy] = get_string_index(vard.dims, ['x', 'y'])
     xvar = vard.dims[ix]
@@ -473,7 +622,15 @@ def get_um_coords(field):
         cz = cz[0] 
     else: 
         cz = None 
-    ct = [c for c in field.coords if 'min' in c][0]
+    ct = [c for c in field.coords if 'min' in c]
+    if len(ct) > 0:
+        ct = ct[0]
+    else:
+        ct = [c for c in field.coords if 'time' in c]
+        if len(ct) > 0:
+            ct = ct[0]
+        else:
+            ct = None
     return (clon, clat, cz, ct)
 
 def get_um_grid_desc(cg):
