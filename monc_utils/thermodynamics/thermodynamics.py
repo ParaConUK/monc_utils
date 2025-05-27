@@ -858,8 +858,6 @@ def wet_bulb_temperature(T, p, q):
 
     k2_pi = 56.831 * pi -4.392 * pi2 - 0.384
 
-#    print D_pi, k1_pi, k2_pi
-
     th_E = equiv_potential_temperature(T, p, q)
     TE=th_E/pi
     inv_TE = (tc.freeze_pt/TE)**tc.rk
