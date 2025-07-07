@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>The difference_ops module. &#8212; monc_utils 0.4.0 documentation</title>
+    <title>The difference_ops module. &#8212; monc_utils 0.4.2 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -34,7 +34,7 @@
         <li class="right" >
           <a href="data_utils.html" title="The data_utils sub-package."
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.4.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.4.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="data_utils.html" accesskey="U">The data_utils sub-package.</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">The difference_ops module.</a></li> 
       </ul>
@@ -48,6 +48,15 @@
   <section id="the-difference-ops-module">
 <h1>The difference_ops module.<a class="headerlink" href="#the-difference-ops-module" title="Permalink to this heading">¶</a></h1>
 <p>This module implements averaging and differencing functions for data on a C-grid.</p>
+<aside class="topic">
+<p class="topic-title">New at 0.4.2</p>
+<ol class="arabic simple">
+<li><p>Non-dimension coords are treated consistently with dimensional coords.</p></li>
+<li><p>Support for non-xy-periodic grid.</p></li>
+<li><p>Support for UM-style grid staggering.</p></li>
+<li><p>Generic derivatives and grid-conforming functions <a class="reference internal" href="#monc_utils.data_utils.difference_ops.grid_conform_xy" title="monc_utils.data_utils.difference_ops.grid_conform_xy"><code class="xref py py-func docutils literal notranslate"><span class="pre">grid_conform_xy()</span></code></a>, <a class="reference internal" href="#monc_utils.data_utils.difference_ops.d_by_dxy_field_native" title="monc_utils.data_utils.difference_ops.d_by_dxy_field_native"><code class="xref py py-func docutils literal notranslate"><span class="pre">d_by_dxy_field_native()</span></code></a> and <a class="reference internal" href="#monc_utils.data_utils.difference_ops.d_by_dxy_field" title="monc_utils.data_utils.difference_ops.d_by_dxy_field"><code class="xref py py-func docutils literal notranslate"><span class="pre">d_by_dxy_field()</span></code></a> are available for xy direction.</p></li>
+</ol>
+</aside>
 <aside class="topic">
 <p class="topic-title">New at 0.2</p>
 <ol class="arabic simple">
@@ -518,13 +527,13 @@ y dimensionm treated as ‘y_p’.</p></li>
         <li class="right" >
           <a href="data_utils.html" title="The data_utils sub-package."
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.4.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.4.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="data_utils.html" >The data_utils sub-package.</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">The difference_ops module.</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2019-2024 Peter Clark.
+        &#169; Copyright 2019-2025 Peter Clark.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>
