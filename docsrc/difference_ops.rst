@@ -3,7 +3,7 @@ The difference_ops module.
 ==========================
 This module implements averaging and differencing functions for data on a C-grid.
 
-.. topic:: New at 0.4.2
+.. topic:: New at 0.4.3
 
     #. Non-dimension coords are treated consistently with dimensional coords.
     #. Support for non-xy-periodic grid.
