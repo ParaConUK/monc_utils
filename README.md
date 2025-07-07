@@ -20,7 +20,7 @@ This will install as if into the standard library but using the cloned code
 which can be edited. Please commit code improvements and discuss merging with 
 the master branch with Peter Clark and other users.
 
-New in version 0.4.2
+New in version 0.4.3
 1. Additions to difference_ops.py to 
 	- Add non-periodic xy support.
 	- Ensure non-dimensional coords are treated consistently in differencing and grid transforms.
