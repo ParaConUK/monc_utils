@@ -26,7 +26,7 @@ copyright = '2019-2025 Peter Clark'
 author = 'Peter Clark'
 
 # The full version, including alpha/beta/rc tags
-release = '0.4.2'
+release = '0.4.3'
 
 # -- General configuration ---------------------------------------------------
 master_doc = 'index'

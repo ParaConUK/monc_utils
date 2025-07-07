@@ -4,11 +4,11 @@
 
 [Full Changelog](https://github.com/ParaConUK/monc_utils/compare/v0.4.2...HEAD)
 
-## [v0.4.2](https://github.com/ParaConUK/monc_utils/tree/v0.4.2)
+## [v0.4.3](https://github.com/ParaConUK/monc_utils/tree/v0.4.3)
 
 Additions amd simplifications to difference_ops.py
 
-[Full Changelog](https://github.com/ParaConUK/monc_utils/compare/v0.4.1...v0.4.2)
+[Full Changelog](https://github.com/ParaConUK/monc_utils/compare/v0.4.1...v0.4.3)
 
 ## [v0.4.1](https://github.com/ParaConUK/monc_utils/tree/v0.4.1)
 
