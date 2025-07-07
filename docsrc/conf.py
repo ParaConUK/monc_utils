@@ -22,11 +22,11 @@ import sys
 # -- Project information -----------------------------------------------------
 
 project = 'monc_utils'
-copyright = '2019-2024 Peter Clark'
+copyright = '2019-2025 Peter Clark'
 author = 'Peter Clark'
 
 # The full version, including alpha/beta/rc tags
-release = '0.4.0'
+release = '0.4.2'
 
 # -- General configuration ---------------------------------------------------
 master_doc = 'index'

@@ -2,11 +2,19 @@
 
 ## [Unreleased](https://github.com/ParaConUK/monc_utils/tree/HEAD)
 
-[Full Changelog](https://github.com/ParaConUK/monc_utils/compare/v0.4.1...HEAD)
+[Full Changelog](https://github.com/ParaConUK/monc_utils/compare/v0.4.2...HEAD)
+
+## [v0.4.2](https://github.com/ParaConUK/monc_utils/tree/v0.4.2)
+
+Additions amd simplifications to difference_ops.py
+
+[Full Changelog](https://github.com/ParaConUK/monc_utils/compare/v0.4.1...v0.4.2)
 
 ## [v0.4.1](https://github.com/ParaConUK/monc_utils/tree/v0.4.1)
 
 Minor fixes to io_um package.
+
+[Full Changelog](https://github.com/ParaConUK/monc_utils/compare/v0.4.0...v0.4.1)
 
 ## [v0.4.0](https://github.com/ParaConUK/monc_utils/tree/v0.4.0)
 
