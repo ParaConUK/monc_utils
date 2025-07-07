@@ -5,18 +5,34 @@ Created on Wed Apr 17 21:03:43 2019
 
 Difference operators for C-grid data.
 
-Note: written for MONC grid:
-   v[i  ,j  ,k] -- +            -- v[i+1 ,j  ,k] --+   
-   |               |               |               |
-   |               |               |               |
--- p[i  ,j  ,k] -- u[i  ,j  ,k] -- p[i+1,j  ,k] -- u[i+1,j,k]   
-   |               |               |               |
-   |               |               |               |
+Note: written for MONC grid
+
+v[i  ,j  ,k] -- +            -- v[i+1,j  ,k] -- +   
+|               |               |               |
+|               |               |               |
+p[i  ,j  ,k] -- u[i  ,j  ,k] -- p[i+1,j  ,k] -- u[i+1,j,k]   
+|               |               |               |
+|               |               |               |
+
+v[i  ,j-1,k] -- +            -- v[i+1,j-1,k] -- +   
    
 The 0th point is a p point. We have decided this is at dx/2, dy/2 
 
 roll(f, +1) shifts data right, so is equivalent to f[i-1] (or j-1).
- 
+
+For optional UM grid:
++           --  v[i ,j+1,k]  -- +            -- v[i+1 ,j  ,k] --+   
+|               |               |               |
+|               |               |               |
+u[i  ,j  ,k]-- p[i  ,j  ,k]  -- u[i+1,j  ,k] -- p[i+1,j  ,k] -- u[i+2,j,k]   
+|               |               |               |
+|               |               |               |
++           -- v[i  ,j  ,k]  -- +            -- v[i+1 ,j  ,k] --+   
+   
+The 0th point is a p point. We have decided this is at dx/2, dy/2 
+
+roll(f, +1) shifts data right, so is equivalent to f[i-1] (or j-1).
+
 
 @author: Peter Clark
 """
@@ -35,6 +51,8 @@ warnings.filterwarnings("ignore", category=FutureWarning,
 
 difference_ops_options = {'cartesian':False,
                           'xy_periodic':False,
+                          'UM_grid':False,
+                          # 'UM_grid':True,
                          }
 
 grid_def = { 'p':('x_p', 'y_p', 'z_p'),
@@ -126,6 +144,115 @@ def interpolate_z(field, znew) :
 
     return newfield
 
+def interp_aux_coords(field, dim, newfield, target_dim):
+    """
+    Intorpolat non-dimensional coords to new dimension.
+
+    Parameters
+    ----------
+    field : xarray.DataArray
+        nD field.
+    dim : char
+        dimension in field. e.g. 'x_p'
+    newfield : xarray.DataArray
+        field with new aux_coords associated with dim.
+    target_dim : char
+        new dimension in field. e.g. 'x_v'
+
+    Returns
+    -------
+    newfield : xarray.DataArray
+        copy of field with target_dim coords.
+    """
+    
+    for coord in field.coords:
+        if coord == dim: continue
+        if dim not in field.coords[coord].dims : continue
+        newcoord = field.coords[coord].interp(
+                      {dim:newfield.coords[target_dim]},
+                      assume_sorted=True,
+                      kwargs={'fill_value':'extrapolate'} )
+        newcoord.name = coord[:-2] + target_dim[1:]
+        newcoord = newcoord.drop_vars([dim, coord])
+        newfield = newfield.drop_vars(coord)
+        newfield = newfield.assign_coords({newcoord.name:newcoord})
+        
+    return newfield
+
+def grid_conform_xy(field, target_dim):
+    """
+    Force field to target grid by averaging if necessary.
+    This works on x or y grid.
+    This replaces grid_conform_x and grid_conform_y
+
+    Parameters
+    ----------
+    field : xarray
+        Any multi-dimensional xarray with x dimension 'x_u' or 'x_p'. Any other
+        x dimensionm treated as 'x_p'.
+        OR 
+        Any multi-dimensional xarray with y dimension 'y_v' or 'y_p'. Any other
+        y dimensionm treated as 'y_p'.
+    target_xdim : str
+       Dimension name 'x_u' or 'x_p' OR 'y_v' or 'y_p'
+
+    Returns
+    -------
+    xarray
+        field on target x or y grid.
+
+    """
+    um_grid = difference_ops_options['UM_grid']
+
+    dimname = target_dim[0]
+    
+    [axis_number] = get_string_index(field.dims,[dimname])
+
+    if axis_number is None:
+        logger.info(f'{field.name} no {dimname} axis in field dims.')
+        return field
+
+    dim = field.dims[axis_number]
+
+    if dim == target_dim:
+        logger.info(f'{field.name} {dimname} is already {target_dim}')
+        return field
+
+    match (target_dim, um_grid):
+        case ('x_p', True) | ('x_u', False) | ('y_p', True) | ('y_v', False):
+            # Data on x_u will have (f[i+1] + f[i])/2 on x_p[i]
+            rollval = -1
+        case ('x_u', True) | ('x_p', False) | ('y_v', True) | ('y_p', False) :
+            # Data on x_u will have (f[i] + f[i-1])/2 on x_p[i]
+            rollval = +1
+        case _:
+            logger.warning(f"Cannot transform {dim} to {target_dim}")
+            return field
+        
+    dim_coord_values = field.coords[dim].data
+    dim_coord_spacing = dim_coord_values[1] - dim_coord_values[0]
+    dim_coord_values_new = dim_coord_values - rollval * dim_coord_spacing / 2.0
+
+    logger.info(f'{field.name} {dim} to {target_dim}')
+    
+    if difference_ops_options['xy_periodic']:
+        mn  = lambda arr:(0.5 
+                          * (arr + np.roll(arr, rollval, axis=axis_number)))
+        newfield = field.rename({dim:target_dim})
+        newfield = exec_fn(mn, newfield, axis_number)
+        newfield.coords[target_dim] = dim_coord_values_new
+        
+    else:
+        
+        newfield = field.interp({dim:dim_coord_values_new},
+                                assume_sorted=True,
+                                kwargs={'fill_value':'extrapolate'} )
+        newfield = newfield.rename({dim:target_dim})
+    
+    newfield = interp_aux_coords(field, dim, newfield, target_dim)
+
+    return newfield
+
 def grid_conform_x(field, target_xdim):
     """
     Force field to target x grid by averaging if necessary.
@@ -144,31 +271,8 @@ def grid_conform_x(field, target_xdim):
         field on target x grid.
 
     """
-    [xaxis] = get_string_index(field.dims,['x'])
-    if xaxis is None:
-        return field
-    xdim = field.dims[xaxis]
-    if xdim == target_xdim:
-        logger.info(f'{field.name} xdim is already {target_xdim}')
-        return field
-    x = field.coords[xdim].data
-    dx = x[1] - x[0]
-    if target_xdim == 'x_p':
-        # Data on x_u will have (f[i] + f[i-1])/2 on x_p[i]
-        xmn = lambda arr:(0.5 * (arr + np.roll(arr, +1, axis=xaxis)))
-        x_new = x - dx / 2.0
-    elif target_xdim == 'x_u':
-        # Data on x_p will have (f[i] + f[i+1])/2 on x_u[i]
-        xmn = lambda arr:(0.5 * (arr + np.roll(arr, -1, axis=xaxis)))
-        x_new = x + dx / 2.0
-    else:
-        logger.warning(f"Cannot transform {xdim} to {target_xdim}")
-        return field
-
-    logger.info(f'{field.name} {xdim} to {target_xdim}')
-    newfield = field.rename({xdim:target_xdim})
-    newfield = exec_fn(xmn, newfield, xaxis)
-    newfield.coords[target_xdim] = x_new
+    logger.warning('grid_conform_x is deprecated - use grid_conform_xy')
+    newfield = grid_conform_xy(field, target_xdim)
     return newfield
 
 def grid_conform_y(field, target_ydim):
@@ -189,31 +293,8 @@ def grid_conform_y(field, target_ydim):
         field on target y grid.
 
     """
-    [yaxis] = get_string_index(field.dims,['y'])
-    if yaxis is None:
-        return field
-    ydim = field.dims[yaxis]
-    if ydim == target_ydim:
-        logger.info(f'{field.name} ydim is already {target_ydim}')
-        return field
-    y = field.coords[ydim].data
-    dy = y[1] - y[0]
-    if target_ydim == 'y_p':
-        # Data on y_v will have (f[j] + f[j-1])/2 on y_p[j]
-        ymn = lambda arr:(0.5 * (arr + np.roll(arr, +1, axis=yaxis)))
-        y_new = y - dy / 2.0
-    elif target_ydim == 'y_v':
-        # Data on y_p will have (f[j] + f[j+1])/2 on y_v[j]
-        ymn = lambda arr:(0.5 * (arr + np.roll(arr, -1, axis=yaxis)))
-        y_new = y + dy / 2.0
-    else:
-        logger.warning(f"Cannot transform {ydim} to {target_ydim}")
-        return field
-
-    logger.info(f'{field.name} {ydim} to {target_ydim}')
-    newfield = field.rename({ydim:target_ydim})
-    newfield = exec_fn(ymn, newfield, yaxis)
-    newfield.coords[target_ydim] = y_new
+    logger.warning('grid_conform_x is deprecated - use grid_conform_xy')
+    newfield = grid_conform_xy(field, target_ydim)
     return newfield
 
 def grid_conform_z(field, z_w, z_p, target_zdim):
@@ -244,13 +325,17 @@ def grid_conform_z(field, z_w, z_p, target_zdim):
         return field
     elif target_zdim == 'z_w':
         logger.info(f'{field.name} {zdim} to {target_zdim}')
-        return interpolate_z(field, z_w)
+        newfield = interpolate_z(field, z_w)
     elif target_zdim == 'z_p':
         logger.info(f'{field.name} {zdim} to {target_zdim}')
-        return interpolate_z(field, z_p)
+        newfield = interpolate_z(field, z_p)
     else:
         logger.warning(f"{field.name}: cannot transform {zdim} to {target_zdim}")
         return field
+
+    newfield = interp_aux_coords(field, zdim, newfield, target_zdim)
+        
+    return newfield
 
 def grid_conform(field, z_w, z_p, grid: str = 'p' ):
     """
@@ -271,6 +356,7 @@ def grid_conform(field, z_w, z_p, grid: str = 'p' ):
         field on target grid.
 
     """
+        
     if type(grid) == str:
         if grid in ['p', 'u', 'v', 'w']:
             op_grid = grid_def[grid]
@@ -279,9 +365,86 @@ def grid_conform(field, z_w, z_p, grid: str = 'p' ):
     else:
         op_grid = grid
 
-    newfield = grid_conform_x(field, op_grid[0])
-    newfield = grid_conform_y(newfield, op_grid[1])
+    newfield = grid_conform_xy(field, op_grid[0])
+    newfield = grid_conform_xy(newfield, op_grid[1])
     newfield = grid_conform_z(newfield, z_w, z_p, op_grid[2])
+    return newfield
+
+def d_by_dxy_field_native(field, dim_dir):
+    """
+    Differentiate field in x direction on native grid.
+
+    Parameters
+    ----------
+        field : xarray nD field
+
+    Returns
+    -------
+        field on native grid
+
+    """
+    
+    um_grid = difference_ops_options['UM_grid']
+
+    dual_grid_names = {'x_p':'x_u', 'x_u':'x_p', 'y_p':'y_v', 'y_v':'y_p'}
+
+    [axis_number] = get_string_index(field.dims,[dim_dir])
+    dim = field.dims[axis_number]
+
+    if dim not in dual_grid_names:
+        logger.warning(f"d_by_d{dim_dir}_field on unknown grid {dim},"
+                       " assuming {dim_dir}_p.")
+        field = field.rename({dim:f'{dim_dir}_p'})
+        
+        
+    dim_coord_values = field.coords[dim].data
+    
+    match (dim, um_grid):
+        case ('x_p', True) | ('x_u', False) | ('y_p', True) | ('y_v', False):
+            # Data on x_u will have (f[i+1] - f[i])/2 
+            rollval = +1
+        case ('x_u', True) | ('x_p', False) | ('y_v', True) | ('y_p', False) :
+            # Data on x_u will have (f[i] - f[i-1])/2 
+            rollval = -1
+        case _:
+            logger.warning(f"Cannot differentiate wrt {dim}")
+            return field
+    
+    dim_new = dual_grid_names[dim]
+    
+    if difference_ops_options['xy_periodic']:
+        dim_coord_spacing = dim_coord_values[1] - dim_coord_values[0]
+        drv = lambda arr:(rollval 
+                          * (arr - np.roll(arr,  rollval, axis=axis_number))
+                          / dim_coord_spacing)
+        dim_coord_values_new = (dim_coord_values 
+                                - rollval * dim_coord_spacing / 2.0)
+        newfield = exec_fn(drv, field.copy(), axis_number)
+    
+    else:
+        
+        dim_coord_values_new = 0.5 * (dim_coord_values[1:] 
+                                    + dim_coord_values[0:-1])
+        dim_coord_spacing = (dim_coord_values[1:] 
+                              - dim_coord_values[0:-1])
+        newfield = field.diff(dim) 
+        
+        dim_coord_spacing = xarray.DataArray(dim_coord_spacing, 
+                                coords = {dim:newfield.coords[dim].values})
+        
+        newfield = newfield / dim_coord_spacing
+        
+    newfield = newfield.rename({dim:dim_new})
+    newfield.coords[dim_new] = dim_coord_values_new
+    newfield.name = f"dbyd{dim_dir}({field.name:s})"
+    
+    if 'units' in field.attrs:
+        newfield.attrs['units'] = field.attrs['units'] + '.m-1'
+    
+    newfield = interp_aux_coords(field, dim, newfield, dim_new)
+
+    logger.info(f"d_by_d{dim_dir}_{field.name}_on_{dim_new} ")
+
     return newfield
 
 def d_by_dx_field_native(field):
@@ -297,32 +460,9 @@ def d_by_dx_field_native(field):
         field on native grid
 
     """
-    [xaxis] = get_string_index(field.dims,['x'])
-    xdim = field.dims[xaxis]
-    x = field.coords[xdim].data
-    dx = x[1] - x[0]
-    if xdim == 'x_u':
-        logger.info(f"d_by_dx_{field.name}_on_x_u ")
-        # Data on x_u will have (f[i] - f[i-1])/dx on x_p[i]
-        xdim_new = 'x_p'
-        xdrv = lambda arr:((arr - np.roll(arr,  1, axis=xaxis)) / dx)
-        x_new = x - dx / 2.0
-    else:
-        if xdim != 'x_p':
-            logger.warning(f"d_by_dx_field on unknown grid {xdim}, assuming x_p.")
-        logger.info(f"d_by_dx_{field.name}_on_x_p ")
-        # Data on x_p will have (f[i+1] - f[i])/dx on x_u[i]
-        xdim_new = 'x_u'
-        xdrv = lambda arr:((np.roll(arr, -1, axis=xaxis) - arr) / dx)
-        x_new = x + dx / 2.0
-
-    newfield = field.rename({xdim:xdim_new})
-    newfield = exec_fn(xdrv, newfield, xaxis)
-    newfield.coords[xdim_new] = x_new
-    newfield.name = f"dbydx({field.name:s})"
-    if 'units' in field.attrs:
-        newfield.attrs['units'] = field.attrs['units'] + '.m-1'
-        
+    logger.warning('d_by_dx_field_native is deprecated '
+                   '- use d_by_dxy_field_native')
+    newfield = d_by_dxy_field_native(field, 'x')
     return newfield
 
 
@@ -346,7 +486,8 @@ def d_by_dx_field(field, z_w, z_p, grid: str = 'p' ) :
 
     @author: Peter Clark
     """
-    newfield = d_by_dx_field_native(field)
+    logger.warning('d_by_dx_field is deprecated - use d_by_dxy_field')
+    newfield = d_by_dxy_field_native(field, 'x')
     newfield = grid_conform(newfield, z_w, z_p, grid=grid)
     newfield.name = f"dbydx({field.name:s})_on_{grid:s}"
 
@@ -365,31 +506,9 @@ def d_by_dy_field_native(field):
         field on native grid
 
     """
-    [yaxis] = get_string_index(field.dims,['y'])
-    ydim = field.dims[yaxis]
-    y = field.coords[ydim].data
-    dy = y[1] - y[0]
-    if ydim == 'y_v':
-        logger.info(f"d_by_dy_{field.name}_on_y_v ")
-        # Data on y_v will have (f[j] - f[j-1])/dy on y_p[j]
-        ydim_new = 'y_p'
-        ydrv = lambda arr:((arr - np.roll(arr,  1, axis=yaxis)) / dy)
-        y_new = y - dy / 2.0
-    else:
-        if ydim != 'y_p':
-            logger.warning(f"d_by_dy_field on unknown grid {ydim}, assuming y_p.")
-        logger.info(f"d_by_dy_{field.name}_on_y_p ")
-        # Data on y_p will have (f[j+1] - f[j])/dy on y_v[j]
-        ydim_new = 'y_v'
-        ydrv = lambda arr:((np.roll(arr, -1, axis=yaxis) - arr) / dy)
-        y_new = y + dy / 2.0
-
-    newfield = field.rename({ydim:ydim_new})
-    newfield = exec_fn(ydrv, newfield, yaxis)
-    newfield.coords[ydim_new] = y_new
-    newfield.name = f"dbydy({field.name:s})"
-    if 'units' in field.attrs:
-        newfield.attrs['units'] = field.attrs['units'] + '.m-1'
+    logger.warning('d_by_dx_field_native is deprecated '
+                   '- use d_by_dxy_field_native')
+    newfield = d_by_dxy_field_native(field, 'y')
 
     return newfield   
 
@@ -413,9 +532,38 @@ def d_by_dy_field(field, z_w, z_p, grid: str = 'p' ) :
 
     @author: Peter Clark
     """
-    newfield = d_by_dy_field_native(field)
+    logger.warning('d_by_dy_field is deprecated - use d_by_dxy_field')
+    newfield = d_by_dxy_field_native(field, 'y')
     newfield = grid_conform(newfield, z_w, z_p, grid=grid)
     newfield.name = f"dbydy({field.name:s})_on_{grid:s}"
+
+    return newfield
+
+def d_by_dxy_field(field, z_w, z_p, dim_dir, grid: str = 'p' ) :
+    """
+    Differentiate field in x direction.
+
+    Parameters
+    ----------
+        field : xarray nD field
+        z_w: xarray coordinate
+            zcoord on w levels - needed if changing vertical grid.
+        z_p: xarray coordinate
+            zcoord on p levels - needed if changing vertical grid.
+        dim_dir: char
+            Direction to differentiate: 'x' or 'y'.
+        grid : str | tuple of 2 strings
+            destination grid (Default = 'p')
+
+    Returns
+    -------
+        field on required grid
+
+    @author: Peter Clark
+    """
+    newfield = d_by_dxy_field_native(field, dim_dir)
+    newfield = grid_conform(newfield, z_w, z_p, grid=grid)
+    newfield.name = f"dbyd{dim_dir}({field.name:s})_on_{grid:s}"
 
     return newfield
 
@@ -440,7 +588,7 @@ def d_by_dz_field_native(field):
         # Differences will be at midpoints between z_p points.
         # These are only z_w points on a uniform grid.
         # Furthermore, we need additional point at the top.
-        zdim_new = 'zi'
+        zdim_new = 'z_i'
         pad = (0,1)
         nroll = -1
         (exn, dexn) = (-1, -1)
@@ -466,12 +614,18 @@ def d_by_dz_field_native(field):
     newfield = newfield.pad(pad_width={zdim:pad}, mode = 'edge')
     newfield = newfield.rename({zdim:zdim_new})
     
-    zi = 0.5 * (zcoord + np.roll(zcoord, nroll))
-    zi[exn] = 2 * zi[exn + dexn] - zi[exn + 2 * dexn]
-    newfield.coords[zdim_new] = zi
+    z_i = 0.5 * (zcoord + np.roll(zcoord, nroll))
+    z_i[exn] = 2 * z_i[exn + dexn] - z_i[exn + 2 * dexn]
+    
+    newfield.coords[zdim_new] = z_i
+    newfield.loc[{zdim_new:z_i[exn]}] = ( 2 * newfield.isel({zdim_new:exn + dexn}) 
+                                     - newfield.isel({zdim_new:exn + 2 * dexn}) )
+                                   
     newfield.name = f"dbydz({field.name:s})"
     if 'units' in field.attrs:
         newfield.attrs['units'] = field.attrs['units'] + '.m-1'
+
+    newfield = interp_aux_coords(field, zdim, newfield, zdim_new)
 
     return newfield
 

@@ -17,7 +17,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="The thermodynamics module." href="thermodynamics.html" />
-    <link rel="prev" title="The io sub-package." href="io_um.html" /> 
+    <link rel="prev" title="The io_um sub-package." href="io_um.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -32,10 +32,10 @@
           <a href="thermodynamics.html" title="The thermodynamics module."
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="io_um.html" title="The io sub-package."
+          <a href="io_um.html" title="The io_um sub-package."
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.4.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="io_um.html" accesskey="U">The io sub-package.</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="io_um.html" accesskey="U">The io_um sub-package.</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">The datain module.</a></li> 
       </ul>
     </div>  
@@ -72,15 +72,73 @@ the required grid and the name appended <code class="docutils literal notranslat
 <span class="target" id="module-monc_utils.io_um.datain"></span><p>Created on Mon Aug  2 11:01:11 2021.</p>
 <p>&#64;author: Peter Clark</p>
 <dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.io_um.datain.set_um_datain_options">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.io_um.datain.</span></span><span class="sig-name descname"><span class="pre">set_um_datain_options</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">opts</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io_um.datain.set_um_datain_options" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.io_um.datain.set_um_stashmap">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.io_um.datain.</span></span><span class="sig-name descname"><span class="pre">set_um_stashmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stash_map_update</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io_um.datain.set_um_stashmap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.io_um.datain.clean_dims">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.io_um.datain.</span></span><span class="sig-name descname"><span class="pre">clean_dims</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io_um.datain.clean_dims" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.io_um.datain.get_coord">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.io_um.datain.</span></span><span class="sig-name descname"><span class="pre">get_coord</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io_um.datain.get_coord" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.io_um.datain.coords_to_latlon">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.io_um.datain.</span></span><span class="sig-name descname"><span class="pre">coords_to_latlon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offsets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io_um.datain.coords_to_latlon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Identify coordinates in Lat/Long (or rotated Lat/Long) grid,
+create dimension coordinates <cite>x_p</cite>, <cite>x_u</cite>, <cite>y_p</cite>, <cite>y_v</cite>, <cite>z_p</cite> or <cite>z_w</cite>
+and modify original (now non-dimension) coordinates to indicate
+u, v, w, or p grid.
+In the horizontal add coordinate values in terms of grid index, taking
+account of staggering (so <cite>x_u</cite> starts at -0.5).</p>
+<p>The optional input <cite>offsets</cite> is intended for data cut out of a larger grid
+(e.g. the inner part of a variable resolution grid) and provides an offset
+in each direction added to the grid index.</p>
+<p>The code looks for coordinates containing ‘longitude’,’latitude’ and
+‘model_level’. It uses the field.name and internal lookup table
+<cite>var_properties</cite> to detrmine the grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field</strong> (<em>xr.DataArray</em>) – DataArray to be modified.</p></li>
+<li><p><strong>offsets</strong> (<em>dict</em><em>, </em><em>optional</em>) – Numeric offsets added to grid index. The default is None.
+Keys are ‘x’, ‘y’, ‘z’]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>field</strong> – DESCRIPTION.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>TYPE</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="monc_utils.io_um.datain.coords_to_cartesian">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.io_um.datain.</span></span><span class="sig-name descname"><span class="pre">coords_to_cartesian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io_um.datain.coords_to_cartesian" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="monc_utils.io_um.datain.get_um_field">
-<span class="sig-prename descclassname"><span class="pre">monc_utils.io_um.datain.</span></span><span class="sig-name descname"><span class="pre">get_um_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stash_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io_um.datain.get_um_field" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">monc_utils.io_um.datain.</span></span><span class="sig-name descname"><span class="pre">get_um_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io_um.datain.get_um_field" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read DataArray corresponding to stash_code from xarray dataset,
 Changing coordinates to more MONC-like.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ds</strong> (<em>xarray Dataset</em>) – Input (at least 2D) data.</p></li>
-<li><p><strong>stash_code</strong> (<em>str</em>) – Of form ‘m01snnimmm’ with nn = section and mmm item.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Actual variable name</p></li>
+<li><p><strong>stash</strong> (<em>str</em>) – Of form ‘m01snnimmm’ with nn = section and mmm item.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -132,7 +190,6 @@ alias present in source_dataset is retrieved and renamed to var_name.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>source_dataset</strong> (<em>xarray Dataset</em>) – Input (at least 2D) data.</p></li>
-<li><p><strong>ref_dataset</strong> (<em>xarray Dataset</em>) – Contains reference profiles. Can be None.</p></li>
 <li><p><strong>var_name</strong> (<em>str</em>) – Name of variable to retrieve.</p></li>
 <li><p><strong>options</strong> (<em>dict</em><em> (</em><em>optional - default=None</em><em>)</em>) – Options possibly used are ‘dx’ and ‘dy’.</p></li>
 <li><p><strong>allow_none</strong> (<em>bool</em><em> (</em><em>optional - default=False</em><em>)</em>) – If True, return None if not found.</p></li>
@@ -174,7 +231,7 @@ alias present in source_dataset is retrieved and renamed to var_name.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="monc_utils.io_um.datain.get_um_data_on_grid">
-<span class="sig-prename descclassname"><span class="pre">monc_utils.io_um.datain.</span></span><span class="sig-name descname"><span class="pre">get_um_data_on_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derived_dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'p'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io_um.datain.get_um_data_on_grid" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">monc_utils.io_um.datain.</span></span><span class="sig-name descname"><span class="pre">get_um_data_on_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derived_dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rename_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'p'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io_um.datain.get_um_data_on_grid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find data from source_dataset remapped to destination grid.</p>
 <p>Uses data from derived_dataset if present, otherwise uses
 get_and_transform to input from source_dataset and remap grid.
@@ -201,8 +258,8 @@ derived_dataset.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="monc_utils.io_um.datain.init_mean">
-<span class="sig-prename descclassname"><span class="pre">monc_utils.io_um.datain.</span></span><span class="sig-name descname"><span class="pre">init_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vard</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io_um.datain.init_mean" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="monc_utils.io_um.datain.get_mean">
+<span class="sig-prename descclassname"><span class="pre">monc_utils.io_um.datain.</span></span><span class="sig-name descname"><span class="pre">get_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vard</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io_um.datain.get_mean" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -240,7 +297,7 @@ derived_dataset.</p>
   <div>
     <h4>Previous topic</h4>
     <p class="topless"><a href="io_um.html"
-                          title="previous chapter">The io sub-package.</a></p>
+                          title="previous chapter">The io_um sub-package.</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
@@ -281,10 +338,10 @@ derived_dataset.</p>
           <a href="thermodynamics.html" title="The thermodynamics module."
              >next</a> |</li>
         <li class="right" >
-          <a href="io_um.html" title="The io sub-package."
+          <a href="io_um.html" title="The io_um sub-package."
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">monc_utils 0.4.0 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="io_um.html" >The io sub-package.</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="io_um.html" >The io_um sub-package.</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">The datain module.</a></li> 
       </ul>
     </div>

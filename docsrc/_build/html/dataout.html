@@ -81,7 +81,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="monc_utils.io.dataout.setup_child_file">
-<span class="sig-prename descclassname"><span class="pre">monc_utils.io.dataout.</span></span><span class="sig-name descname"><span class="pre">setup_child_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outtag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">override</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io.dataout.setup_child_file" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">monc_utils.io.dataout.</span></span><span class="sig-name descname"><span class="pre">setup_child_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outtag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">override</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_coords</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#monc_utils.io.dataout.setup_child_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create NetCDF dataset for derived data in destdir.</p>
 <p>File name is original file name concatenated with filter_def.id.</p>
 <dl class="field-list simple">
@@ -91,6 +91,7 @@
 <li><p><strong>destdir</strong> (<em>str</em>) – Output directory.</p></li>
 <li><p><strong>options</strong> (<em>dict</em>) – Options dictionary</p></li>
 <li><p><strong>override=False</strong> (<em>bool</em>) – if True force creation of file</p></li>
+<li><p><strong>keep_coords=None</strong> (<em>dict</em><em> | </em><em>None</em>) – coordinates to use for child file</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

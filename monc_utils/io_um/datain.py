@@ -4,6 +4,8 @@ Created on Mon Aug  2 11:01:11 2021.
 @author: Peter Clark
 """
 import numpy as np
+import xarray as xr
+import typing
 import datetime
 from monc_utils.data_utils.string_utils import get_string_index
 from monc_utils.io.dataout import save_field
@@ -99,7 +101,37 @@ def get_coord(field, dimname):
         
     return full_dim
 
-def coords_to_latlon(field, offsets=None):
+def coords_to_latlon(field:xr.DataArray, offsets:typing.Optional[dict]=None):
+    """
+    Identify coordinates in Lat/Long (or rotated Lat/Long) grid, 
+    create dimension coordinates `x_p`, `x_u`, `y_p`, `y_v`, `z_p` or `z_w`
+    and modify original (now non-dimension) coordinates to indicate 
+    u, v, w, or p grid.
+    In the horizontal add coordinate values in terms of grid index, taking 
+    account of staggering (so `x_u` starts at -0.5). 
+    
+    The optional input `offsets` is intended for data cut out of a larger grid
+    (e.g. the inner part of a variable resolution grid) and provides an offset 
+    in each direction added to the grid index.
+    
+    The code looks for coordinates containing 'longitude','latitude' and
+    'model_level'. It uses the field.name and internal lookup table 
+    `var_properties` to detrmine the grid.
+    
+    Parameters
+    ----------
+    field : xr.DataArray
+        DataArray to be modified.
+    offsets : dict, optional
+        Numeric offsets added to grid index. The default is None. 
+        Keys are 'x', 'y', 'z']
+
+    Returns
+    -------
+    field : TYPE
+        DESCRIPTION.
+
+    """
     
     var_properties = {"u":{"grid":UGRID,
                            "units":'m.s-1'},
@@ -138,27 +170,29 @@ def coords_to_latlon(field, offsets=None):
                 ['u', 'v', 'w'])):
         
         c = get_coord(field, coord)
+        
+        if c is None: continue
             
-        if c is not None:
-            if coord in 'model_level':
-                base_coord_vals = field.coords[c].values.astype("float32")
-            else:
-                base_coord_vals = np.arange(field.sizes[c], dtype="float32")
-            if in_grid_type[i]:
-                
-                new_name = f'{c}_{alt_point}'
-                coord_vals = base_coord_vals + offsets['xyz'[i]] + [-0.5, -0.5, 0.0][i]
-                new_coord = 'xyz'[i] + f'_{alt_point}'
-                
-            else:
-                
-                new_name = f'{c}_p'
-                coord_vals = base_coord_vals + offsets['xyz'[i]] + [0.0, 0.0, -0.5][i]           
-                new_coord = 'xyz'[i] + '_p'
-                
-            field = field.assign_coords({new_coord: (c, coord_vals)})
-            field = field.rename({c:new_name})
-            swap_map[new_name] = new_coord
+        if coord == 'model_level':
+            base_coord_vals = field.coords[c].values.astype("float32")
+        else:
+            base_coord_vals = np.arange(field.sizes[c], dtype="float32")
+            
+        if in_grid_type[i]:
+            
+            new_name = f'{c}_{alt_point}'
+            coord_vals = base_coord_vals + offsets['xyz'[i]] + [-0.5, -0.5, 0.0][i]
+            new_coord = 'xyz'[i] + f'_{alt_point}'
+            
+        else:
+            
+            new_name = f'{c}_p'
+            coord_vals = base_coord_vals + offsets['xyz'[i]] + [0.0, 0.0, -0.5][i]           
+            new_coord = 'xyz'[i] + '_p'
+            
+        field = field.assign_coords({new_coord: (c, coord_vals)})
+        field = field.rename({c:new_name})
+        swap_map[new_name] = new_coord
 
     field = field.swap_dims(swap_map)
 
@@ -195,19 +229,19 @@ def coords_to_cartesian(field):
         else:
             
             new_coord_full = f'{new_coord}{get_um_grid_desc(old_coord)}'
-            if new_coord in 'xy':
+            if new_coord in 'xy':                        
                 
                 if old_coord == 'longitude_cu':
                     field = _adjust_cyclic_data_order(field, old_coord, 'u')
                     new_coord_full = 'x_u'
                     
-                if old_coord == 'latitude_cu': 
+                elif old_coord == 'latitude_cu': 
                     new_coord_full = 'y_p'
                     
-                if old_coord == 'longitude_cv':
+                elif old_coord == 'longitude_cv':
                     new_coord_full = 'x_p'
                     
-                if old_coord == 'latitude_cv':
+                elif old_coord == 'latitude_cv':
                     field = _adjust_cyclic_data_order(field, old_coord, 'v')
                     new_coord_full = 'y_v'
                     
