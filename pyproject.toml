@@ -4,7 +4,7 @@ requires = ["setuptools >= 64", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "Subfilter"
+name = "monc_utils"
 dynamic = ["version"]
 authors = [
   { name='Peter Clark', email='p.clark@reading.ac.uk'},
