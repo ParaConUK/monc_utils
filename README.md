@@ -20,6 +20,11 @@ This will install as if into the standard library but using the cloned code
 which can be edited. Please commit code improvements and discuss merging with 
 the master branch with Peter Clark and other users.
 
+New in version 0.5.0
+1. Simplification of interface to remove ``ref_file``.
+2. Removal of possible confusion between ``th`` and ``theta`` etc..
+3. Some code rationalisation to improve sharing with um i/o.
+
 New in version 0.4.3
 1. Additions to difference_ops.py to 
 	- Add non-periodic xy support.
