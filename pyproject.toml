@@ -10,7 +10,6 @@ authors = [
   { name='Peter Clark', email='p.clark@reading.ac.uk'},
   { name='Todd Jones', email='t.r.jones@reading.ac.uk'},
 ]
-license='MIT'
 description='python code to compute sub-filter quantities from MONC output.'
 readme = "README.md"
 requires-python = ">=3.9"
@@ -18,7 +17,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
-
+license='MIT'
 dependencies = [
     "numpy",
     "dask",
@@ -31,10 +30,9 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 where = ["src/"]
-#include = ["mynamespace.subpackage_a"]
 
 [project.urls]
-Homepage = "https://github.com/ReadingClouds/monc_utils"
-Issues = "https://github.com/ReadingClouds/monc_utils/issues"
+Homepage = "https://github.com/ParaConUK/monc_utils"
+Issues = "https://github.com/ParaConUK/monc_utils/issues"
 
 [tool.setuptools_scm]

@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#%%
 """
 Created on Wed Jul 21 10:47:00 2021
 
 @author: xm904103
 """
 import os
+import sys
 
 import numpy as np
 import xarray as xr
@@ -18,6 +20,21 @@ import monc_utils
 import dask
 
 import matplotlib.pyplot as plt
+
+from pathlib import Path
+from loguru import logger
+
+logger.remove()
+logger.add(sys.stderr, 
+            format = "<c>{time:HH:mm:ss.SS}</c>"
+                  " | <level>{level:<8}</level>"
+                  " | <green>{function:<16}</green>"
+                  " : <green>{line:<4}</green> : {message}", 
+           colorize=True, 
+           level="INFO")
+    
+logger.enable("monc_utils")
+
 #from dask.diagnostics import Profiler, ResourceProfiler, CacheProfiler
 #from dask.diagnostics import ProgressBar
 
@@ -26,18 +43,18 @@ dask.config.set({"array.slicing.split_large_chunks": True})
 
 test_case = 0
 
-# onedrive = '"C:/Users/paclk/OneDrive - University of Reading/"
-#onedrive = "C:/Users/xm904103/OneDrive - University of Reading/"
-onedrive = "E:/Data/"
+# rootdir = '"C:/Users/paclk/rootdir - University of Reading/"
+#rootdir = "C:/Users/xm904103/rootdir - University of Reading/"
+rootdir = Path("F:")
 
 if test_case == 0:
     config_file = 'config_test_case_0.yaml'
-    indir = onedrive+'ug_project_data/'
-    odir = onedrive+'ug_project_data/'
+    indir = rootdir / 'traj_data/r_50m_60s_Monsoon3/'
+    odir = rootdir / 'traj_data/r_50m_60s_Monsoon3/test_out/'
 #    file = 'diagnostics_3d_ts_21600.nc'
 #    ref_file = 'diagnostics_ts_21600.nc'
-    file = 'diagnostics_3d_ts_23400.nc'
-    ref_file = 'diagnostics_ts_23400.nc'
+    file = 'diagnostics_3d_ts_16800.nc'
+    ref_file = 'diagnostics_ts_16800.nc'
     iz = 40
 #    iy = 95
     iy = 89
@@ -47,8 +64,8 @@ if test_case == 0:
 elif test_case == 1:
     config_file = 'config_test_case_1.yaml'
     #indir = '/storage/silver/wxproc/xm904103/'
-    indir = onedrive+'traj_data/CBL/'
-    odir = onedrive+'traj_data/CBL/'
+    indir = rootdir / 'CBL/'
+    odir = rootdir / 'CBL/'
     #odir = '/storage/silver/wxproc/xm904103/'
     file = 'diagnostics_3d_ts_13200.nc'
     ref_file = None
@@ -56,18 +73,20 @@ elif test_case == 1:
 
 options, update_config = mu.monc_utils_options(config_file)
 
+#%%
+
 options['aliases'] = {
     'th':['theta', 'potential_temperature'],
     'p':['pressure'],
     'tracer': ['tracer_rad2'],
     }
 options['save_all'] = 'no'
-odir = odir + 'test_datain/'
+# odir = odir / 'test_datain/'
 
-#dir = onedrive+'Git/python/monc_utils/test_data/BOMEX/'
-#odir = onedrive+'Git/python/monc_utils/test_data/BOMEX/'
+#dir = rootdir+'Git/python/monc_utils/test_data/BOMEX/'
+#odir = rootdir+'Git/python/monc_utils/test_data/BOMEX/'
 
-os.makedirs(odir, exist_ok = True)
+#os.makedirs(odir, exist_ok = True)
 
 #file = 'diagnostics_ts_18000.0.nc'
 #ref_file = 'diagnostics_ts_18000.0.nc'
@@ -106,7 +125,15 @@ os.makedirs(odir, exist_ok = True)
 var_list = [
 #     "saturation",
 #     "tracer",
-#     "th_L",
+    "thref",
+    "pref",
+    "theta_L",
+    "dbydz(theta_L)",
+#    "dbydz(teddy)",
+    "theta_v",
+    "dbydz(theta_v)",
+    "th",
+    "dbydz(th)",
 #     "q_vapour",
     "q_cloud_liquid_mass",
 #     "q_total",
@@ -138,7 +165,7 @@ var_list = [
 
 fname = 'test_datain'
 
-dataset = xr.open_dataset(indir+file)
+dataset = xr.open_dataset(indir / file)
 
 [itime, iix, iiy, iiz] = get_string_index(dataset.dims, ['time', 'x', 'y', 'z'])
 timevar = list(dataset.dims)[itime]
@@ -164,21 +191,31 @@ defn = 1
 #    dataset = xr.open_dataset(dir+file, chunks={timevar: defn,
 #                                                'z':'auto', 'zn':'auto'})
 
-dataset = xr.open_dataset(indir+file, chunks={timevar: defn,
+dataset = xr.open_dataset(indir / file, chunks={timevar: defn,
                                             xvar:nch, yvar:nch,
                                             'z':'auto', 'zn':'auto'})
 print(dataset)
 #    ref_dataset = Dataset(dir+ref_file, 'r')
 if ref_file is not None:
-    ref_dataset = xr.open_dataset(indir+ref_file)
+    ref_dataset = xr.open_dataset(indir / ref_file)
+    
+    ref_dataset = ref_dataset[['prefn', 'rho', 'rhon', 'thref', ]]
+    [itime] = get_string_index(ref_dataset.dims, ['time', ])
+    timevar = list(ref_dataset.dims)[itime]
+    
+    ref_dataset = ref_dataset.isel({timevar:0}).squeeze(drop=True).drop(timevar)
+    
+    dataset = xr.merge([dataset, ref_dataset])
 else:
     ref_dataset = None
+    
 
 for var_name in var_list:
     # op_var = di.get_data(dataset, ref_dataset, var_name,
     #                      options=options,
     #                      allow_none=True)
-    op_var = di.get_data_on_grid(dataset, ref_dataset, var_name,
+    op_var = di.get_data_on_grid(dataset, 
+                                 var_name,
                                  options=options)
     print(op_var)
     if op_var is None:

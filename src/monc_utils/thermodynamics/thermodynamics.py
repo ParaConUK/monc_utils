@@ -615,7 +615,7 @@ def equiv_potential_temperature_approx(T, p, q):
     e = q_p_to_e(q, p)
     m = q_to_mix(q)
     T_LCL = t_lcl_e(T, e)
-    theta= moist_potential_temperature(T , p, m)
+    theta= moist_potential_temperature(T, p, m)
 
     theta_e = theta * \
       np.exp((C1/T_LCL-C2) * m * (1 + C3 * m) )
@@ -803,7 +803,7 @@ def sat_unsat_wet_bulb_potential_temperature(T, p, q,
         
     if pp is None: pp = p.isel(z_p=sl).mean('z_p')
 
-    if TDp is None: TDp =  dewpoint(Tp, pp, q.isel(z_p=sl).mean('z_p'))
+    if TDp is None: TDp =  dewpoint(Tp, p, q.isel(z_p=sl).mean('z_p'))
     
     T_LCL = t_lcl_td(Tp, TDp)
     
@@ -1508,11 +1508,11 @@ derived_vars = {
     #      'func': ,
     #      'units': ''},
     'rh_ice':
-        {'vars': ('T', 'p', 'q_vapour'),
+        {'vars': ('T', 'pressure', 'q_vapour'),
          'func': rh_ice,
          'units': ''},
     'rh':
-        {'vars': ('T', 'p', 'q_vapour'),
+        {'vars': ('T', 'pressure', 'q_vapour'),
           'func': rh,
           'units': ''},
     'esat':
@@ -1524,19 +1524,19 @@ derived_vars = {
          'func': esat_ice,
          'units': 'Pa'},
     'exner':
-        {'vars': ('p',),
+        {'vars': ('pressure',),
          'func': exner,
          'units': ''},
     'T':
-        {'vars': ('th', 'p'),
+        {'vars': ('theta', 'pressure'),
          'func': temperature,
          'units': 'K'},
 #    'th':
-#        {'vars': ('T', 'p'),
+#        {'vars': ('T', 'pressure'),
 #         'func': potential_temperature,
 #         'units': 'K'},
-    'th_m':
-        {'vars': ('T', 'p', 'm_vapour'),
+    'theta_m':
+        {'vars': ('T', 'pressure', 'm_vapour'),
          'func': moist_potential_temperature,
          'units': 'K'},
     'm_vapour':
@@ -1572,47 +1572,47 @@ derived_vars = {
          'func': t_lcl_rh,
          'units': ''},
     'T_dew':
-        {'vars': ('T', 'p', 'q'),
+        {'vars': ('T', 'pressure', 'q_vapour'),
          'func': dewpoint,
          'units': 'K'},
     'qsat':
-        {'vars': ('T', 'p'),
+        {'vars': ('T', 'pressure'),
          'func': qsat,
          'units': ''},
     'alpha':
-        {'vars': ('T', 'p'),
+        {'vars': ('T', 'pressure'),
          'func': dqsatbydT,
          'units': r'K$^{-1}$'},
     'T_w':
-        {'vars': ('T', 'p', 'q_vapour'),
+        {'vars': ('T', 'pressure', 'q_vapour'),
          'func': wet_bulb_temperature,
          'units': 'K'},
-    'th_w':
-        {'vars': ('T', 'p', 'q_vapour'),
+    'theta_w':
+        {'vars': ('T', 'pressure', 'q_vapour'),
          'func': wet_bulb_potential_temperature,
          'units': 'K'},
-    'th_s':
-        {'vars': ('T', 'p'),
+    'theta_s':
+        {'vars': ('T', 'pressure'),
          'func': sat_wet_bulb_potential_temperature,
          'units': 'K'},
-    'th_sw':
-        {'vars': ('T', 'p', 'q_vapour'),
+    'theta_sw':
+        {'vars': ('T', 'pressure', 'q_vapour'),
          'func': sat_unsat_wet_bulb_potential_temperature,
          'units': 'K'},
-    'th_e':
-        {'vars': ('T', 'p', 'q_vapour'),
+    'theta_e':
+        {'vars': ('T', 'pressure', 'q_vapour'),
          'func': equiv_potential_temperature,
          'units': 'K'},
-    'th_L':
-        {'vars': ('th','q_cloud_liquid_mass','piref'),
+    'theta_L':
+        {'vars': ('theta','q_cloud_liquid_mass','piref'),
          'func': liquid_water_potential_temperature,
          'units': 'K'},
-    'th_v':
-        {'vars': ('th', 'q_vapour','q_cloud_liquid_mass'),
+    'theta_v':
+        {'vars': ('theta', 'q_vapour','q_cloud_liquid_mass'),
          'func': virtual_potential_temperature,
         'units': 'K'},
-    'th_v_monc':
-        {'vars': ('th','thref','q_vapour','q_cloud_liquid_mass'),
+    'theta_v_monc':
+        {'vars': ('theta','thref','q_vapour','q_cloud_liquid_mass'),
          'func': virtual_potential_temperature_monc,
         'units': 'K'},
     'q_total':
@@ -1620,39 +1620,39 @@ derived_vars = {
          'func': q_total,
          'units': 'kg/kg'},
     'buoyancy':
-        {'vars': ('th_v',),
+        {'vars': ('theta_v',),
          'func': buoyancy,
          'units': r'm s$^{-2}$'},
     'buoyancy_monc':
-        {'vars': ('th_v', 'thref',),
+        {'vars': ('theta_v', 'thref',),
          'func': buoyancy_monc,
          'units': r'm s$^{-2}$'},
     'buoyancy_moist':
-        {'vars': ('th','thref','p','q_vapour','q_cloud_liquid_mass'),
+        {'vars': ('theta','thref','pressure','q_vapour','q_cloud_liquid_mass'),
          'func': buoyancy_moist,
          'units': r'm s$^{-2}$'},
     'moist_dbdz':
-        {'vars':('th', 'thref', 'pref', 'q_vapour', 'q_cloud_liquid_mass',
+        {'vars':('theta', 'thref', 'pref', 'q_vapour', 'q_cloud_liquid_mass',
                  'z', 'zn') ,
           'func': moist_dbdz,
           'units': r's$^{-2}$'},
     'dmoist_bdz':
-        {'vars':('th', 'thref', 'p', 'q_vapour', 'q_cloud_liquid_mass',
+        {'vars':('theta', 'thref', 'pressure', 'q_vapour', 'q_cloud_liquid_mass',
                  'z', 'zn') ,
           'func': dmoist_bdz,
           'units': r's$^{-2}$'},
     'dbdz':
-        {'vars': ('th', 'p', 'q_vapour', 'q_cloud_liquid_mass',
+        {'vars': ('theta', 'pressure', 'q_vapour', 'q_cloud_liquid_mass',
                  'z', 'zn'),
          'func': dbdz,
          'units': r's$^{-2}$'},
     'dbdz_monc':
-        {'vars': ('th', 'thref', 'p', 'q_vapour', 'q_cloud_liquid_mass',
+        {'vars': ('theta', 'thref', 'pressure', 'q_vapour', 'q_cloud_liquid_mass',
                  'z', 'zn'),
          'func': dbdz_monc,
          'units': r's$^{-2}$'},
     'saturation':
-        {'vars': ('th','thref','pref', 'q_vapour','q_cloud_liquid_mass'),
+        {'vars': ('theta','thref','pref', 'q_vapour','q_cloud_liquid_mass'),
          'func': saturation,
         'units': 'kg/kg'},
     'cloud_fraction':
