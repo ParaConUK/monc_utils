@@ -2,7 +2,13 @@
 
 ## [Unreleased](https://github.com/ParaConUK/monc_utils/tree/HEAD)
 
-[Full Changelog](https://github.com/ParaConUK/monc_utils/compare/v0.4.2...HEAD)
+[Full Changelog](https://github.com/ParaConUK/monc_utils/compare/v0.5.0...HEAD)
+
+## [v0.5.0](https://github.com/ParaConUK/monc_utils/tree/v0.4.3)
+
+Simplification of interface to remove ``ref_file``.
+
+[Full Changelog](https://github.com/ParaConUK/monc_utils/compare/v0.4.3...v0.5.0)
 
 ## [v0.4.3](https://github.com/ParaConUK/monc_utils/tree/v0.4.3)
 

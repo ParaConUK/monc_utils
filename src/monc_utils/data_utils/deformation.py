@@ -48,7 +48,7 @@ def deformation(source_dataset, ref_dataset, derived_dataset,
 
     @author: Peter Clark
     """
-    if 'deformation' in derived_dataset['ds']:
+    if derived_dataset is not None and 'deformation' in derived_dataset['ds']:
         deformation = derived_dataset['ds']['deformation']
         return deformation
 
@@ -128,7 +128,9 @@ def deformation(source_dataset, ref_dataset, derived_dataset,
 
     logger.info(f'Deformation: {defm}')
 
-    if options is not None and options['save_all'].lower() == 'yes':
+    if (derived_dataset is not None 
+        and options is not None 
+        and options['save_all'].lower()) == 'yes':
         defm = save_field(derived_dataset, defm)
 
     return defm
