@@ -20,6 +20,9 @@ This will install as if into the standard library but using the cloned code
 which can be edited. Please commit code improvements and discuss merging with 
 the master branch with Peter Clark and other users.
 
+New in version 0.5.1
+1. Improved support for UM pp files.
+
 New in version 0.5.0
 1. Simplification of interface to remove ``ref_file``.
 2. Removal of possible confusion between ``th`` and ``theta`` etc..
