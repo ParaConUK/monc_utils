@@ -41,3 +41,12 @@ def get_string_index(strings, substrings, exact=False):
         index_list.append(idx)
 
     return tuple(index_list)
+
+def in_list(c:str, strlist:str) -> bool:
+    inlist = -1
+    for i,item in enumerate(strlist):
+        if c in item:
+            inlist = True
+            break
+    return inlist
+

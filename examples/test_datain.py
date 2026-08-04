@@ -6,7 +6,7 @@ Created on Wed Jul 21 10:47:00 2021
 
 @author: xm904103
 """
-import os
+
 import sys
 
 import numpy as np
@@ -266,8 +266,14 @@ ctop.name = 'Cloud Top'
 cbot = xr.concat(bot, dim='time')    
 cbot.name = 'Cloud Base' 
 
-ctop.plot(x='time', label='Cloud Top')
-cbot.plot(x='time', label='Cloud Base')
+fig, ax = plt.subplots(1,1, figsize=(8,8))
+
+ctop.plot(x='time', label='Cloud Top', ax=ax)
+cbot.plot(x='time', label='Cloud Base', ax=ax)
+
+ax.legend()
+
+ax.set_ylabel('Height (m)')
 
  
 plt.show()

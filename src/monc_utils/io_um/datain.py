@@ -8,10 +8,11 @@ import xarray as xr
 import typing
 import datetime
 from monc_utils.data_utils.string_utils import get_string_index
-from monc_utils.io.datain import (is_xy_periodic,
+from monc_utils.io.file_utils import get_full_dim_name
+from monc_utils.io.datain import (set_coord_type,
+                                  set_grid_type,
                                   add_grid_attrs,
                                   clean_coords,
-                                  get_full_dim_name,
                                   correct_grid_and_units, 
                                   get_derived_vars,
                                   get_derivative)
@@ -23,7 +24,20 @@ import monc_utils.data_utils.difference_ops as do
 import monc_utils.thermodynamics.thermodynamics as th
 import monc_utils
 
+from monc_utils.io_um import ( um_datain_options, 
+                               var_properties,
+                               stash_map,
+                               PGRID, WGRID, UGRID, VGRID, TGRID,
+                               inverse_lookup,
+                             )
+               
+
+
 from loguru import logger
+
+import re
+
+stash_pattern = re.compile("^m01s[0-9]{2}i[0-9]{3}$")
 
 """
 Hierarchy
@@ -46,56 +60,6 @@ get_um_data_on_grid
 
 """
 
-um_datain_options = {'cartesian':False,
-                     'xy_periodic':False,
-                     'ref_is_init_mean':True,
-                     }
-
-
-stash_map = { 'u'                  : 'm01s00i002', 
-              'v'                  : 'm01s00i003',
-              'w'                  : 'm01s00i150',
-              'th'                 : 'm01s00i004',
-              'theta'              : 'm01s00i004',
-              'air_potential_temperature': 'm01s00i004',
-              'surface_altitude'   : 'm01s00i033',
-              'q_vapour'           : 'm01s00i010', 
-              'specific_humidity'  : 'm01s00i010',
-              'q_ice_mass'         : 'm01s00i012', 
-              'q_cloud_liquid_mass': 'm01s00i254',
-              'exner_rho'          : 'm01s00i255',
-              'exner'              : 'm01s00i406',
-              'mr_liquid_cloud'    : 'm01s00i392',
-              'mr_ice cloud'       : 'm01s00i393',
-              'mr_rain'            : 'm01s00i394',
-              'mr_graupel'         : 'm01s00i395',
-              'mr_ice crystals'    : 'm01s00i396',
-              'p_rho'              : 'm01s00i407',
-              'p_th'               : 'm01s00i408',
-              'p'                  : 'm01s00i408',
-              'p_surf'             : 'm01s00i409',
-              'cloud fraction'     : 'm01s00i266',
-              'rainrate'           : 'm01s04i203',
-              "traj_tracer_xr"     : 'm01s00i700',
-              "traj_tracer_xi"     : 'm01s00i701',
-              "traj_tracer_yr"     : 'm01s00i702',
-              "traj_tracer_yi"     : 'm01s00i703',
-              "traj_tracer_zr"     : 'm01s00i704',
-              "upward_heat_flux"   : 'm01s03i216',
-              "upward_water_vapour_flux" : 'm01s03i222',
-              'rho'                : 'm01s15i271',
-              'u_b'                : 'm01s15i002',
-              'v_b'                : 'm01s15i003',
-              'air_temperature'    : 'm01s16i004',
-            }
-
-
-PGRID = [False,False,False]
-UGRID = [True,False,False]
-VGRID = [False,True,False]
-WGRID = [False,False,True]
-TGRID = WGRID
-BGRID = [True,True,False]
 
 
 def set_um_datain_options(opts:dict):
@@ -109,6 +73,30 @@ def set_um_stashmap(stash_map_update:dict):
     stash_map.update(stash_map_update)
     logger.info('Updated stash_map.')
     return
+
+def get_grid_type(field, var_name):
+
+    in_grid_type = TGRID
+    units = ''
+    
+    for i, coord in enumerate(['longitude','latitude','model_level_number']):
+        c = get_full_dim_name(field, coord)
+        if c is not None :
+            
+            match c[-2:]:
+                case '_p':
+                    in_grid_type[i] = PGRID[i]
+                case '_w':
+                    in_grid_type[i] = WGRID[i]
+                case '_u':
+                    in_grid_type[i] = UGRID[i]
+                case '_v':
+                    in_grid_type[i] = VGRID[i]
+        elif var_name in var_properties:
+            in_grid_type[i] = var_properties[var_name]['grid'][i]
+            units = var_properties[var_name]['units']
+    return in_grid_type, units
+
 
 def coords_to_latlon(field:xr.DataArray, offsets:typing.Optional[dict]=None):
     """
@@ -140,86 +128,69 @@ def coords_to_latlon(field:xr.DataArray, offsets:typing.Optional[dict]=None):
     field : TYPE
         DESCRIPTION.
 
-    """
-    var_properties = {"u":{"grid":UGRID,
-                           "units":'m.s-1'},
-                      "v":{"grid":VGRID,
-                           "units":'m.s-1'},
-                      "w":{"grid":WGRID,
-                           "units":'m.s-1'},
-                      "th":{"grid":TGRID,
-                            "units":'K'},
-                      "theta":{"grid":TGRID,
-                            "units":'K'},
-                      "p":{"grid":PGRID,
-                           "units":'Pa'},
-                      "pressure":{"grid":PGRID,
-                           "units":'Pa'},
-                      "q_vapour":{"grid":TGRID,
-                                  "units":'kg/kg'},
-                      "q_cloud_liquid_mass":{"grid":TGRID,
-                                             "units":'kg/kg'},
-                      "q_ice_mass":{"grid":TGRID,
-                                    "units":'kg/kg'},
-                      "u_b":{"grid":BGRID,
-                             "units":'m.s-1'},
-                      "v_b":{"grid":BGRID,
-                             "units":'m.s-1'},
-                      }
-    
-    field.attrs['cartesian'] = False
-    
-    field, xy_periodic = is_xy_periodic(field, 
-                           xy_periodic_def=
-                           um_datain_options.get('xy_periodic', False))    
+    """  
        
     if offsets is None:
         offsets={'x':0, 'y':0, 'z':0}
     
     var_name = field.name
     
-    in_properties = var_properties.get(var_name, {"grid":TGRID,"units":''})
-        
-    in_grid_type = in_properties['grid']
-
+    in_grid_type, units = get_grid_type(field, var_name)
+            
     swap_map = {}
     for i, (coord, alt_point) in enumerate(
-            zip(['longitude','latitude','model_level'],
+            zip(['longitude','latitude','model_level_number'],
                 ['u', 'v', 'w'])):
         
-        c = get_full_dim_name(field, coord)
+        if i > len(in_grid_type)-1: break
         
-        if c is None: continue
-            
-        if coord == 'model_level':
+        new_name = c = get_full_dim_name(field, coord)
+        
+        # print(f'full_dim_name {coord} {c}')
+        
+        if c is None and coord == 'level_height':
+            new_name = c = get_full_dim_name(field, 'model_level')
+        
+        if c is None : continue
+        
+                    
+        if coord == 'level_height':
             base_coord_vals = field.coords[c].values.astype("float32")
         else:
             base_coord_vals = np.arange(field.sizes[c], dtype="float32")
             
+        
         if in_grid_type[i]:
-            
-            new_name = f'{c}_{alt_point}'
-            coord_vals = base_coord_vals + offsets['xyz'[i]] + [-0.5, -0.5, 0.0][i]
+            if c[-2:] != f'_{alt_point}':
+                new_name = f'{c}_{alt_point}'
+            coord_vals = base_coord_vals + offsets['xyz'[i]] + [1, 1, 0.0][i]
             new_coord = 'xyz'[i] + f'_{alt_point}'
             
         else:
             
-            new_name = f'{c}_p'
-            coord_vals = base_coord_vals + offsets['xyz'[i]] + [0.0, 0.0, -0.5][i]           
+            if c[-2:] != '_p':
+                new_name = f'{c}_p'
+            coord_vals = base_coord_vals + offsets['xyz'[i]] + [0.5, 0.5, +0.5][i]           
             new_coord = 'xyz'[i] + '_p'
             
+        if c != new_name:    
+            field = field.rename({c:new_name})
+            c = new_name
+                 
+        nc = {new_coord: (c, coord_vals)}
             
-        field = field.assign_coords({new_coord: (c, coord_vals)})
-        field = field.rename({c:new_name})
+        # print(field)
+        # print(f'{nc=}')
+        field = field.assign_coords(nc)
         swap_map[new_name] = new_coord
 
     field = field.swap_dims(swap_map)
     
     for c in 'xy':        
-        field = add_grid_attrs(field, c, xy_periodic=xy_periodic)
+        field = add_grid_attrs(field, c, grid_type=field.attrs['grid_type'])
 
     if 'units' not in field.attrs:        
-        field.attrs['units'] = in_properties['units']
+        field.attrs['units'] = units
                   
     return field
     
@@ -245,19 +216,26 @@ def coords_to_cartesian(field):
         field = field.assign_coords({old_coord:c})
         return field
     
-    field.attrs['cartesian'] = True
-    field, xy_periodic = is_xy_periodic(field, 
-                           xy_periodic_def=
-                           um_datain_options.get('xy_periodic', True))
+    xy_periodic = (field.attrs['grid_type'] == 'xy_periodic')
+    
+    units = ''
+
+#    field.attrs['cartesian'] = True
+#    field, xy_periodic = is_xy_periodic(field, 
+#                           xy_periodic_def=
+#                           um_datain_options.get('xy_periodic', True))
     
     for new_coord, old_coord in zip(('x', 'y', 'z', 'time'), 
                                     get_um_coords(field)):
         
         if old_coord is None : continue
     
+        new_coord_full = None
+    
         if new_coord == 'z':
             
-            vert_dim = get_full_dim_name(field, 'lev_eta')
+            # vert_dim = get_full_dim_name(field, 'lev_eta')
+            vert_dim = get_full_dim_name(field, 'eta')
             if vert_dim is not None:
                 if 'rho' in vert_dim: 
                     new_coord_full = 'z_p'
@@ -270,8 +248,10 @@ def coords_to_cartesian(field):
                         new_coord_full = 'z_w'
                     else: 
                         new_coord_full = 'z_p'
+                        
+            if new_coord_full is None: continue
                 
-            
+            # print(f'{field=} \n {old_coord} {new_coord_full}')
             field = field.rename({old_coord:new_coord_full})
             field = field.swap_dims({vert_dim:new_coord_full})
             
@@ -306,7 +286,7 @@ def coords_to_cartesian(field):
                 
                 field = add_grid_attrs(field, 
                                        new_coord_full, 
-                                       xy_periodic=xy_periodic)
+                                       grid_type='xy_periodic')
                 
             else:
                 field = field.rename({old_coord:new_coord_full})          
@@ -322,10 +302,12 @@ def coords_to_cartesian(field):
         if 'bounds' in field[new_coord_full].attrs:
             field[new_coord_full].attrs.pop('bounds')
             
-            
+    if 'units' not in field.attrs:        
+        field.attrs['units'] = units
+        
     return field
     
-def get_um_field(ds, stash:str=None, name:str=None):
+def get_um_field(ds, name:str, add_name=True):
     """
     Read DataArray corresponding to stash_code from xarray dataset,
     Changing coordinates to more MONC-like.
@@ -346,35 +328,51 @@ def get_um_field(ds, stash:str=None, name:str=None):
 
     """
     
-    cartesian = um_datain_options.get('cartesian', True)  
+    grid_type = um_datain_options.get('grid_type', 'lam')
+    match grid_type.lower():
+        case 'xy_periodic':
+            coord_type = 'cartesian'
+        case 'lam' :
+            coord_type = 'rotated_lon_lat'
+        case 'global':
+            coord_type = 'lon_lat'
+        case _ :
+            raise ValueError(f'Grid type {grid_type} unknown.')
+            
+    cartesian = (coord_type == 'cartesian')  
     
     keep_coords = um_datain_options.get('keep_coords', [])
     
-    if name is None:
-        if stash is None:
-            raise ValueError('No field id provided.')
-        else:
-            if stash in ds.data_vars:
-                name = stash
-            elif f'STASH_{stash}' in ds.data_vars:
-                name = f'STASH_{stash}'
-            else:
-                raise ValueError(f'field id {stash} not in dataset.')
-    field = ds[name] 
-                
+    if name in ds.data_vars: 
+        var_name = name
+    elif f'STASH_{name}' in ds.data_vars:
+        var_name = f'STASH_{name}'
+    else:
+        raise ValueError(f'field id {name} not in dataset.')
+        
+    field = ds[var_name]
+
+    if re.match(stash_pattern, name) and add_name:
+       field.name = inverse_lookup(name, stash_map)
+ 
+    field = set_grid_type(field, grid_type_def=grid_type) 
+    field = set_coord_type(field, coord_type_def=coord_type)              
+
+    # print(field)            
     if cartesian:
         field = coords_to_cartesian(field)
     else:
         field = coords_to_latlon(field)
                  
-    field = clean_coords(field, keep_coords=keep_coords)
+    # field = clean_coords(field, keep_coords=keep_coords)
     
     return field
     
 def get_um_data(source_dataset,
                 var_name: str,
                 options: dict=None,
-                allow_none: bool=False) :
+                allow_none: bool=False,
+                add_name=True) :
     """
     Extract data or derived data field from source NetCDF dataset.
 
@@ -413,10 +411,12 @@ def get_um_data(source_dataset,
 
     """
     logger.info(f'Retrieving {var_name:s}.')
+    
     try:
-        if var_name in source_dataset:
-            vard = get_um_field(source_dataset, name=var_name)
-            
+        if var_name in source_dataset or f'STASH_{var_name}' in source_dataset:
+            vard = get_um_field(source_dataset, 
+                                name=var_name, 
+                                add_name=add_name)
         elif var_name in stash_map:
             vard = get_um_field(source_dataset, stash=stash_map[var_name])
             vard.name = var_name           
@@ -450,54 +450,185 @@ def get_um_data(source_dataset,
 
     except KeyError:
                
-        if var_name == 'piref':
-            vard = get_derived_vars(source_dataset,
-                                    'exner', th.derived_vars,
+        vard = get_um_processed_var(source_dataset,
+                                    var_name,
                                     options=options,
-                                    get_data_fn=get_um_data)
-            vard = get_mean(vard)
-            vard.name = var_name  
-            
-        elif var_name[-3:] == 'ref':
-            vard = get_um_data(source_dataset, var_name[:-3])
-            vard = get_mean(vard)
-            vard.name = var_name  
-                                    
-        elif var_name in th.derived_vars:
-
-            vard = get_derived_vars(source_dataset, 
-                                       var_name, 
-                                       th.derived_vars,
-                                       options=options,
-                                       get_data_fn=get_um_data)
-        elif var_name[:4] == 'dbyd':
-                    
-            vard = get_derivative(source_dataset,
-                                  var_name,
-                                  options=options,
-                                  allow_none=allow_none,
-                                  get_data_fn=get_um_data) 
-                
-
-        else :
-            
-            vard = None
-
+                                    allow_none=allow_none)
+        
     if vard is None :
         if allow_none:
             return None
         else:
             raise KeyError(f"Data {var_name:s} not in dataset.")
 
-    else:                    
-        
-        vard = correct_grid_and_units(var_name, vard, source_dataset,
-                                      options=options)
+    # else:    
 
+        # vard = correct_um_grid_and_units(var_name, vard, source_dataset,
+                                         # options=options)
+    
+
+    return vard
+
+def correct_um_grid_and_units(var_name: str,
+                              vard: xr.core.dataarray.DataArray,
+                              source_dataset: xr.core.dataset.Dataset,
+                              options: dict=None):
+    """
+    Correct input grid specification.
+    SPECIFIC TO UM
+
+    Parameters
+    ----------
+    var_name : str
+        Name of variable to retrieve.
+    vard : xr.core.dataarray.DataArray
+        Input (at least 2D) data.
+    source_dataset : xr.core.dataset.Dataset
+        Source dataset for vard
+    options : dict(optional - default=None)
+        Options possibly used are 'dx' and 'dy'.
+
+    Returns
+    -------
+    vard : xarray
+        Required data with corrected grid.
+
+    """
+    
+    return vard
+    # Get model resolution values
+    if 'dx' not in vard.attrs or 'dx' not in vard.attrs:   
+        raise ValueError("Grid info not available")
+    else:
+        dx = vard.attrs['dx']
+        dy = vard.attrs['dy']
+
+    # Add correct x and y grids.
+
+    if var_name in var_properties:
+
+        vp = var_properties[var_name]['grid']
+
+        if 'x' in vard.dims:
+            nx = vard.shape[vard.get_axis_num('x')]
+
+            if vp[0] :
+                x = (np.arange(nx) + 1.0) * np.float64(dx)
+                xn = 'x_u'
+            else:
+                x = (np.arange(nx) + 0.5) * np.float64(dx)
+                xn = 'x_p'
+
+            vard = vard.rename({'x':xn})
+            vard.coords[xn] = x
+
+        if 'y' in vard.dims:
+            ny = vard.shape[vard.get_axis_num('y')]
+            if vp[1] :
+                y = (np.arange(ny) + 1.0) * np.float64(dy)
+                yn = 'y_v'
+            else:
+                y = (np.arange(ny) + 0.5)* np.float64(dy)
+                yn = 'y_p'
+
+            vard = vard.rename({'y':yn})
+            vard.coords[yn] = y
+
+        if 'z' in vard.dims:
+            if vp[2]:
+                vard = vard.rename({'z':'z_w'})
+            else:
+                zn = source_dataset.coords['zn']
+                vard = vard.rename({'z':'z_p'})
+                vard.coords['z'] = zn.data
+
+        if 'zn' in vard.dims:
+            if vp[2]:
+                z = source_dataset.coords['z']
+                vard = vard.rename({'zn':'z_w'})
+                vard.coords['z_w'] = z.data
+            else:
+                vard = vard.rename({'zn':'z_p'})
+
+
+        vard.attrs['units'] = var_properties[var_name]['units']
+
+    else:
+
+        if 'x' in vard.dims:
+            nx = vard.shape[vard.get_axis_num('x')]
+            x = (np.arange(nx) + 0.5) * np.float64(dx)
+            xn = 'x_p'
+            vard = vard.rename({'x':xn})
+            vard.coords[xn] = x
+
+        if 'y' in vard.dims:
+            ny = vard.shape[vard.get_axis_num('y')]
+            y = (np.arange(ny) + 0.5) * np.float64(dy)
+            yn = 'y_p'
+            vard = vard.rename({'y':yn})
+            vard.coords[yn] = y
+
+        if 'z' in vard.dims:
+            vard = vard.rename({'z':'z_w'})
+
+        if 'zn' in vard.dims:
+            vard = vard.rename({'zn':'z_p'})
+
+        if 'units' not in vard.attrs:        
+            vard.attrs['units'] = ''
+            
+    vard = set_grid_type(vard, grid_type_def='xy_periodic') 
+    vard = set_coord_type(vard, coord_type_def='cartesian')              
+
+    for c in 'xy':        
+        field = add_grid_attrs(vard, c, xy_periodic=True)
+
+    return vard
+
+
+def get_um_processed_var(source_dataset,
+                         var_name: str,
+                         options: dict=None,
+                         allow_none: bool=False):
+    if var_name == 'piref':
+        vard = get_derived_vars(source_dataset,
+                                'exner', th.derived_vars,
+                                options=options,
+                                get_data_fn=get_um_data)
+        vard = get_mean(vard)
+        vard.name = var_name  
+        
+    elif var_name[-3:] == 'ref':
+        vard = get_um_data(source_dataset, var_name[:-3])
+        vard = get_mean(vard)
+        vard.name = var_name  
+                                
+    elif var_name in th.derived_vars:
+
+        vard = get_derived_vars(source_dataset, 
+                                   var_name, 
+                                   th.derived_vars,
+                                   options=options,
+                                   get_data_fn=get_um_data)
+    elif var_name[:4] == 'dbyd':
+                
+        vard = get_derivative(source_dataset,
+                              var_name,
+                              options=options,
+                              allow_none=allow_none,
+                              get_data_fn=get_um_data) 
+            
+
+    else :
+        
+        vard = None
+        
     return vard
 
 def get_um_and_transform(source_dataset, var_name,
                          options=None,
+                         add_name=True,
                          grid='p'):
     """
     Extract data from dataset and transform to alternative grid.
@@ -535,18 +666,51 @@ def get_um_and_transform(source_dataset, var_name,
         return clean_coords(c)
         
     
-    var = get_um_data(source_dataset, var_name, options=options)
+    var = get_um_data(source_dataset, var_name, 
+                      options=options, 
+                      add_name=add_name)
     
-    z_w = _get_mapped_coord(source_dataset, 
-                            'thlev_zsea_theta', 
-                            'thlev_eta_theta',
-                            'z_w')
+    # print(f'{var=}')
     
-    z_p = _get_mapped_coord(source_dataset,
-                            'rholev_zsea_rho',
-                            'rholev_eta_rho',
-                            'z_p')
+    if 'z_w' in var.dims:
+        z_w = var.z_w
+        z_p_values = 0.5 * (z_w.values[0:-1] + z_w.values[1:])
+        z_p = xr.DataArray(z_p_values, {'z_p':z_p_values}, name='z_p')
+        
+    elif 'z_p' in var.dims:
+        z_p = var.z_p
+        z_w_values = 0.5 * (z_p.values[0:-1] + z_p.values[1:])
+        z_w_top = z_w_values[-1] * 2 - z_w_values[-2]
+        z_w_values = np.append(z_w_values, z_w_top)
+        z_w = xr.DataArray(z_w_values, {'z_w':z_w_values}, name='z_w')
+        
+    else:
+                       
+        if 'thlev_eta_theta'  in source_dataset.dims and \
+           'thlev_zsea_theta' in source_dataset.coords:
+            
+            z_w = _get_mapped_coord(source_dataset, 
+                                    'thlev_zsea_theta', 
+                                    'thlev_eta_theta',
+                                    'z_w')
+        elif 'level_height_w' in source_dataset.dims:
+            
+            z_w = source_dataset.coords['level_height_w'].rename(
+                                       {'level_height_w':'z_w'})
     
+        if 'rholev_eta_rho'  in source_dataset.dims and \
+             'rholev_zsea_rho' in source_dataset.coords:
+        
+            z_p = _get_mapped_coord(source_dataset,
+                                    'rholev_zsea_rho',
+                                    'rholev_eta_rho',
+                                    'z_p')
+        elif 'level_height_p' in source_dataset.dims:
+            
+            z_p = source_dataset.coords['level_height_p'].rename(
+                                       {'level_height_p':'z_p'})
+
+        
     var = do.grid_conform(var, z_w, z_p, grid = grid )
 
     # Re-chunk data if using dask
@@ -560,6 +724,7 @@ def get_um_data_on_grid(source_dataset, var_name,
                         derived_dataset=None,
                         options=None,
                         rename_time=False,
+                        add_name=True,
                         grid='p') :
     """
     Find data from source_dataset remapped to destination grid.
@@ -600,14 +765,18 @@ def get_um_data_on_grid(source_dataset, var_name,
 
     # First, find op_var_name
     # Default
-    op_var_name = var_name + ongrid
-
-    if len(var_name) > 5:
-        if var_name[-5:] == ongrid:
-            op_var_name = var_name
-        elif var_name[-5:-1] == '_on_':
-            var_name = var_name[:-5]
-            op_var_name = var_name[:-5] + ongrid
+    
+    if re.match(stash_pattern, var_name) and add_name:
+        field_name = inverse_lookup(var_name, stash_map)
+        op_var_name = field_name + ongrid
+    else:    
+        op_var_name = var_name + ongrid
+        if len(var_name) > 5:
+            if var_name[-5:] == ongrid:
+                op_var_name = var_name
+            elif var_name[-5:-1] == '_on_':
+                var_name = var_name[:-5]
+                op_var_name = var_name[:-5] + ongrid
 
     if options is not None and options.get('save_all', 'yes').lower() == 'yes':
 
@@ -619,7 +788,10 @@ def get_um_data_on_grid(source_dataset, var_name,
             return op_var
 
     op_var = get_um_and_transform(source_dataset,
-                                  var_name, options=options, grid=grid)
+                                  var_name, 
+                                  options=options, 
+                                  add_name=add_name,
+                                  grid=grid)
     op_var.name = op_var_name
     
     if rename_time:
