@@ -164,7 +164,7 @@ def interp_aux_coords(field, dim, newfield, target_dim):
     newfield : xarray.DataArray
         copy of field with target_dim coords.
     """
-    
+    droplist = []
     for coord in field.coords:
         if coord == dim: continue
         if dim not in field.coords[coord].dims : continue
@@ -173,10 +173,13 @@ def interp_aux_coords(field, dim, newfield, target_dim):
                       assume_sorted=True,
                       kwargs={'fill_value':'extrapolate'} )
         newcoord.name = coord[:-2] + target_dim[1:]
-        newcoord = newcoord.drop_vars([dim, coord])
-        newfield = newfield.drop_vars(coord)
-        newfield = newfield.assign_coords({newcoord.name:newcoord})
         
+        newcoord = newcoord.drop_vars([dim, coord])
+        newfield = newfield.assign_coords({newcoord.name:newcoord})
+        droplist.append(coord)
+
+    newfield = newfield.drop_vars(droplist)
+       
     return newfield
 
 def grid_conform_xy(field, target_dim):

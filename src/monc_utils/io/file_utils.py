@@ -4,6 +4,7 @@ Created on Mon Aug  2 11:06:21 2021.
 @author: Peter Clark and Todd Jones
 """
 import numpy as np
+import xarray as xr
 import re
 
 
@@ -136,3 +137,31 @@ def configure_model_resolution(dataset, options=None):
         options['dy'] = dy
 
     return dx, dy, options
+
+
+def get_full_dim_name(field:xr.DataArray, dimname:str) -> str:
+    """
+    Find dimension name in input field that contains dimname.
+
+    Parameters
+    ----------
+    field : xr.DataArray
+        Any xr.DataArray
+    dimname : str
+        Part of possible dimname. Typical use is dimname='longitude' to match 
+        both 'longitude' and 'grid_longitude'.
+
+    Returns
+    -------
+    str or None
+        Corresponding dim if present.
+
+    """
+    
+    full_dim = [d for d in field.dims if dimname in d]
+    if full_dim : 
+        full_dim = full_dim[0]
+    else:
+        full_dim = None
+        
+    return full_dim

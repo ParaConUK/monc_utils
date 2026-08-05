@@ -9,6 +9,7 @@ from monc_utils.io.file_utils import (options_database,
                                       configure_model_resolution,
                                       )
 from monc_utils.data_utils.string_utils import get_string_index
+from monc_utils.io.file_utils import get_full_dim_name
 from monc_utils.io.dataout import save_field
 from monc_utils.data_utils.dask_utils import re_chunk
 
@@ -51,65 +52,60 @@ get_data_on_grid
 
 """
 
-def is_xy_periodic(field:xr.DataArray, 
-                   xy_periodic_def:bool=True) -> (xr.DataArray, bool):
+def set_coord_type(field:xr.DataArray, 
+                   coord_type_def:str='cartesian') -> xr.DataArray:
     """
-    Find if field is xy_periodic and set attribute in field.
+    Set coord_type attribute in field.
+    Unchanged if already set, otherwise default.
+
+    Parameters
+    ----------
+    field : xr.DataArray
+        Input MONC or UM field.
+    coord_type_def : str, optional
+        DESCRIPTION. The default is 'cartesian'.
+
+    Returns
+    -------
+    field : xr.DataArray 
+        Input field with attrs['coord_type'] set.
+
+    """
+    
+    if 'coord_type' not in field.attrs: 
+    
+        field.attrs['coord_type'] = coord_type_def
+
+    return field
+
+def set_grid_type(field:xr.DataArray, 
+                   grid_type_def:str='xy_periodic') -> xr.DataArray:
+    """
+    Set grid_type attribute in field.
     Returns field.attrs['xy_periodic'] if available, otherwise default.
 
     Parameters
     ----------
     field : xr.DataArray
         Input MONC or UM field.
-    xy_periodic_def : bool, optional
-        DESCRIPTION. The default is True.
+    grid_type_def : str, optional
+        DESCRIPTION. The default is 'xy_periodic'.
 
     Returns
     -------
     field : xr.DataArray 
-        Input field with attrs['xy_periodic'] set..
-    xy_periodic : bool
-        True if xy_periodic.
+        Input field with attrs['grid_type'] set.
 
     """
     
-    if 'xy_periodic' not in field.attrs:
-        xy_periodic = xy_periodic_def
-        field.attrs['xy_periodic'] = xy_periodic
-    else:
-        xy_periodic = field.attrs['xy_periodic']
-        
-    return field, xy_periodic
-
-def get_full_dim_name(field:xr.DataArray, dimname:str) -> str:
-    """
-    Find dimension name in input field that contains dimname.
-
-    Parameters
-    ----------
-    field : xr.DataArray
-        Any xr.DataArray
-    dimname : str
-        Part of possible dimname. Typical use is dimname='longitude' to match 
-        both 'longitude' and 'grid_longitude'.
-
-    Returns
-    -------
-    str or None
-        Corresponding dim if present.
-
-    """
+    if 'grid_type' not in field.attrs: 
     
-    full_dim = [d for d in field.dims if dimname in d]
-    if full_dim : 
-        full_dim = full_dim[0]
-    else:
-        full_dim = None
-        
-    return full_dim
+        field.attrs['grid_type'] = grid_type_def.lower()
+            
+    return field
 
 def add_grid_attrs(field:xr.DataArray, coord_name:str, 
-                   xy_periodic:bool=True) -> xr.DataArray:
+                   grid_type:str|None=None) -> xr.DataArray:
     """
     Add 'xy_periodic', drid spacing and domain size to field.attrs.
 
@@ -129,12 +125,10 @@ def add_grid_attrs(field:xr.DataArray, coord_name:str,
 
     """
     
-    if 'xy_periodic' in field.attrs:
-        xy_periodic = field.attrs['xy_periodic']
-    else:
-        if xy_periodic is None:
-            xy_periodic = True
-        field.attrs['xy_periodic'] = xy_periodic
+    if grid_type is None:        
+        grid_type = field.attrs.get('grid_type', 'xy_periodic')
+
+    field.attrs['grid_type'] = grid_type.lower()
         
     coord_name_full = get_full_dim_name(field, coord_name)
     
@@ -144,10 +138,13 @@ def add_grid_attrs(field:xr.DataArray, coord_name:str,
     
     delta = coord.diff(dim=coord_name_full).min().item()
     
-    if xy_periodic:
-        domain = coord.values[-1] - coord.values[0] + delta
-    else:
-        domain = coord.values[-1] - coord.values[0]
+    match grid_type.lower():
+        case 'xy_periodic':
+            domain = coord.values[-1] - coord.values[0] + delta
+        case 'global':
+            domain = coord.values[-1] - coord.values[0] + delta
+        case 'lam':
+            domain = coord.values[-1] - coord.values[0]
     
     field.attrs[f'd{coord_name[0]}'] = delta
     field.attrs[f'L{coord_name[0]}'] = domain
@@ -240,7 +237,7 @@ def correct_grid_and_units(var_name: str,
                       "v_b":{"grid":BGRID,
                                              "units":'m.s-1'},
                       }
-
+    
     # Get model resolution values
     if 'dx' not in vard.attrs or 'dx' not in vard.attrs:   
         dx, dy, options = configure_model_resolution(source_dataset,
@@ -324,9 +321,62 @@ def correct_grid_and_units(var_name: str,
         if 'units' not in vard.attrs:        
             vard.attrs['units'] = ''
             
-    for c in 'xy':        
-        field = add_grid_attrs(vard, c, xy_periodic=True)
+    vard = set_grid_type(vard, grid_type_def='xy_periodic') 
+    vard = set_coord_type(vard, coord_type_def='cartesian')              
 
+    for c in 'xy':        
+        field = add_grid_attrs(vard, c, grid_type='xy_periodic')
+
+    return vard
+
+def get_processed_var(source_dataset,
+                         var_name: str,
+                         options: dict=None,
+                         allow_none: bool=False):
+
+    match var_name:
+        case 'theta' :
+            thp = get_data(source_dataset, 'th', 
+                           options=options, allow_none=allow_none) 
+            thref = get_data(source_dataset, 'thref', 
+                           options=options, allow_none=allow_none)
+            vard = thp + thref
+            vard.name = 'theta'
+        case 'pressure' :
+            p = get_data(source_dataset, 'p', 
+                         options=options, allow_none=allow_none) 
+            pref = get_data(source_dataset, 'pref', 
+                         options=options, allow_none=allow_none)
+            vard = p + pref
+            vard.name = 'pressure'
+        case 'thref':
+            vard = get_thref(source_dataset, options=options)
+        case 'pref':
+            vard = get_pref(source_dataset, options=options)
+        case 'piref':
+            vard = th.exner(get_pref(source_dataset, options=options))
+        case 'z':
+            vard = source_dataset.dims['z']
+        case 'zn':
+            vard = source_dataset.dims['zn']
+        case _:
+            
+            if var_name in th.derived_vars:
+
+                vard = get_derived_vars(source_dataset,
+                                        var_name, th.derived_vars,
+                                        options=options)
+        
+            elif var_name[:4] == 'dbyd':
+                
+                vard = get_derivative(source_dataset,
+                                     var_name,
+                                     options=options,
+                                     allow_none=allow_none) 
+                
+            else:
+                
+                vard = None
     return vard
 
 def get_data(source_dataset, 
@@ -404,58 +454,18 @@ def get_data(source_dataset,
 
     except KeyError:
         
-        match var_name:
-            case 'theta' :
-                thp = get_data(source_dataset, 'th', 
-                               options=options, allow_none=allow_none) 
-                thref = get_data(source_dataset, 'thref', 
-                               options=options, allow_none=allow_none)
-                vard = thp + thref
-                vard.name = 'theta'
-            case 'pressure' :
-                p = get_data(source_dataset, 'p', 
-                             options=options, allow_none=allow_none) 
-                pref = get_data(source_dataset, 'pref', 
-                             options=options, allow_none=allow_none)
-                vard = p + pref
-                vard.name = 'pressure'
-            case 'thref':
-                vard = get_thref(source_dataset, options=options)
-            case 'pref':
-                vard = get_pref(source_dataset, options=options)
-            case 'piref':
-                vard = th.exner(get_pref(source_dataset, options=options))
-            case 'z':
-                vard = source_dataset.dims['z']
-            case 'zn':
-                vard = source_dataset.dims['zn']
-            case _:
-                
-                if var_name in th.derived_vars:
-
-                    vard = get_derived_vars(source_dataset,
-                                            var_name, th.derived_vars,
-                                            options=options)
-            
-                elif var_name[:4] == 'dbyd':
-                    
-                    vard = get_derivative(source_dataset,
-                                         var_name,
-                                         options=options,
-                                         allow_none=allow_none) 
-                    
-                else:
-                    
-                    vard = None
+        vard = get_processed_var(source_dataset,
+                                    var_name,
+                                    options=options,
+                                    allow_none=allow_none)
                         
-
     if vard is None :
         if allow_none:
             return None
         else:
             raise KeyError(f"Data {var_name:s} not in dataset.")
 
-    else:                    
+    else:    
         
         vard = correct_grid_and_units(var_name, vard, source_dataset,
                                       options=options)
