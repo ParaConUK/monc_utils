@@ -71,59 +71,42 @@ def get_z_coords(cubes):
                 if grid[2]:
                     if z_theta is None or coord.shape[0] > z_theta.shape[0]: 
                         z_theta = coord
+                        # print(f'Set z_theta to \n {coord}')
                 else:
                     if z_rho is None or coord.shape[0] > z_rho.shape[0]: 
                         z_rho = coord
-                    
-        
-    coord_list = unique_coords(cubes, 'level_height')
+                        # print(f'Set z_rho to \n {coord}')
     
-    pop_index = []
-    for i, c1 in enumerate(coord_list):
-        if c1 == z_theta or c1 == z_rho:
-            pop_index.append(i)
-            
-    if pop_index : 
-        for p in sorted(pop_index, reverse=True): coord_list.pop(p)
+    
+    coord_list = unique_coords(cubes, 'level_height')
+    if z_theta in coord_list: coord_list.remove(z_theta)
+    if z_rho in coord_list: coord_list.remove(z_rho)
         
-                   
-    # for i, c1 in enumerate(coord_list[:-1]):
+    # print(f'{coord_list=}')
+               
     for i, c1 in enumerate(coord_list):
+        # print(f'{c1=}')
         if c1.bounds[0,0] == 0.0 and c1.bounds[1,0] != 0.0:
             if z_rho is None: 
                 z_rho = c1
                 z_rho_index = i  
-            # elif (z_rho != c1 and 
-            #       np.allclose(c1.points, np.mean(c1.bounds, axis=1))):
-            #     z_rho = c1
-            #     z_rho_index = i  
                 
         if c1.bounds[0,0] > 0.0:
             if z_theta is None:
                 z_theta = c1        
                 z_theta_index = i            
-            # elif (z_theta != c1 and 
-            #      np.allclose(c1.points, np.mean(c1.bounds, axis=1))):
-            #     z_theta = c1        
-            #     z_theta_index = i     
                 
     if z_theta is None:
         if z_rho is not None: 
             if z_rho_index is not None:
                 z_theta = np.concatenate([z_rho.bounds[:,0],
                                           np.array([z_rho.bounds[-1,1]])])            
-            # else:
-            #     for i, c1 in enumerate(coord_list):
-            #         if c1 == z_rho:
-            #             z_rho_index = i
-            #             break
-            # if z_rho_index is not None:
                 coord_list.pop(z_rho_index)     
             z_rho = z_rho.points
     
     elif z_rho is None:
         if z_theta is not None: 
-                # z_rho = np.concatenate([z_theta.bounds[:,0],
+            # z_rho = np.concatenate([z_theta.bounds[:,0],
                                         # np.array([z_theta.bounds[-1,1]])])
             z_rho = 0.5 * (z_theta.points[1:] + z_theta.points[0:-1])
             if z_theta.points[0] == 0:
@@ -131,11 +114,7 @@ def get_z_coords(cubes):
                                         np.array([z_theta.bounds[-1,1]])])    
             else:
                 z_rho = np.concatenate([np.array([0.5 * z_theta.points[0]]), z_rho])
-            # else:
-            #     for i, c1 in enumerate(coord_list):
-            #         if c1 == z_theta:
-            #             z_theta_index = i
-            #             break
+
             if z_theta_index is not None:
                 coord_list.pop(z_theta_index)     
             z_theta = z_theta.points
@@ -143,17 +122,21 @@ def get_z_coords(cubes):
         z_rho = z_rho.points
         z_theta = z_theta.points
                 
+    # print(f'{z_rho=} {z_theta=}')
     # print(z_theta, z_rho)
     
     return z_rho, z_theta, coord_list
 
 
 def get_horiz_coords(cubes, coord):
+    
+    
     if 'long' in coord: idim = 0
     if 'lat' in coord:  idim = 1
     
+    print(f'{coord=} {idim=}')
+    
     coord_u = coord_p = None
-    u_index = p_index = None
     for cube in cubes:
         stash = str(cube.attributes['STASH'])
         name = inverse_lookup(stash, stash_map)
@@ -177,11 +160,11 @@ def get_horiz_coords(cubes, coord):
                     if grid[idim]:
                         if coord_u is None or cube_coord.shape[0] > coord_u.shape[0]: 
                             coord_u = cube_coord
-                            # print(f'Set coord_{["u","v"][idim]} for {idim=} {coord_u.name()}')
+                            print(f'Set coord_{["u","v"][idim]} for {idim=} {coord_u}')
                     else:
                         if coord_p is None or cube_coord.shape[0] > coord_p.shape[0]: 
                             coord_p = cube_coord     
-                            # print(f'Set coord_p for {idim=} {coord_p.name()}')
+                            print(f'Set coord_p for {idim=} {coord_p}')
                             
                 # else:
                 #     print(f'No {coord} in {coord_names}.')
@@ -214,20 +197,23 @@ def get_horiz_coords(cubes, coord):
                         coord_u = cip
                         coord_p = cjp
                         # print('Set coord_u to cip, coord_p to cjp')
+    elif coord_u is None:
+        coord_u = 0.5 * (coord_p.points[0:-1] + coord_p.points[1:])
+        coord_u = np.append(coord_u, 
+                            np.array([ 2.0 * coord_u[-1] - coord_u[-2]])) 
+        coord_p = coord_p.points
+        
+        # print(f'computing coord_u {idim} {coord_u=}')
+    elif coord_p is None:
+        coord_p = 0.5 * (coord_u.points[0:-1] + coord_u.points[1:])
+        coord_p = np.append(np.array([ 2.0 * coord_p[0] - coord_p[1]]),
+                            coord_p) 
+        coord_u = coord_u.points
+        # print(f'computing coord_p {idim} {coord_p=}')
     else:
-        if coord_u is None:
-            coord_u = 0.5 * (coord_p.points[0:-1] + coord_p.points[1:])
-            coord_u = np.append(coord_u, 
-                                np.array([ 2.0 * coord_u[-1] - coord_u[-2]])) 
-            if coord_p in coord_list: coord_list.remove(coord_p)
-            coord_p = coord_p.points
-        else:
-            coord_p = 0.5 * (coord_u.points[0:-1] + coord_u.points[1:])
-            coord_p = np.append(np.array([ 2.0 * coord_p[0] - coord_p[1]]),
-                                coord_p) 
-            if coord_u in coord_list: coord_list.remove(coord_u)
-            coord_u = coord_u.points
-
+        coord_u = coord_u.points
+        coord_p = coord_p.points
+        
     # if coord_u is None: print(f"No coord_u for dim {idim}")
 
     # if coord_p is None: print(f"No coord_p for dim {idim}")
@@ -260,7 +246,7 @@ def identify_zcoord(cube_zcoord, da, z_rho, z_theta, coord_list):
     for i, c in enumerate(coord_list):
         if cube_zcoord == c:
             # logger.info(f"Renaming {da.name} level_height as z_{i}.")            
-            da = da.swap_dims({'model_level_number':'level_height'})
+            #da = da.swap_dims({'model_level_number':'level_height'})
             subscript = f'z{i}'
             if len(cube_zcoord.points) < len(z_rho):
                 if np.allclose(cube_zcoord.points, 
@@ -284,7 +270,8 @@ def identify_long_coord(cube_long_coord, da, long_u, long_p, coord_list):
     #       np.max(np.abs(cube_long_coord.points[0:minlp] - long_p[0:minlp]))
     #      )
     
-    # if len(cube_long_coord.points) <= len(long_p):
+        
+    # print(f'{cube_long_coord=}\n {da=}\n {long_u=}\n {long_p=}\n {coord_list=}')
     if np.allclose(cube_long_coord.points[0:minlp], long_p[0:minlp]):
         name = cube_long_coord.name()
         # print(f'Renaming {name} {name}_p')
@@ -292,7 +279,6 @@ def identify_long_coord(cube_long_coord, da, long_u, long_p, coord_list):
         da = rename_coords(da, 'p', H_COORDS)
         return da
 
-    # if len(cube_long_coord.points) <= len(long_u):
     if np.allclose(cube_long_coord.points[0:minlu], long_u[0:minlu]):       
         name = cube_long_coord.name()
         # print(f'Renaming {name} {name}_u')
@@ -319,6 +305,8 @@ def identify_lat_coord(cube_lat_coord, da, lat_v, lat_p, coord_list):
     
     minlv = min(len(cube_lat_coord.points), len(lat_v)) 
     minlp = min(len(cube_lat_coord.points), len(lat_p)) 
+
+    # print(f'{cube_lat_coord=}\n {da=}\n {lat_v=}\n {lat_p=}\n {coord_list=}')
 
     # print(cube_lat_coord.name(),
     #       np.max(np.abs(cube_lat_coord.points[0:minlv] - lat_v[0:minlv])),
@@ -426,8 +414,8 @@ def cubelist_to_dataset(cubes,
     # print(f'** lat_v {np.min(lat_v)}, {np.max(lat_v)}, {np.shape(lat_v)}') 
     # print(f'** lat_p {np.min(lat_p)}, {np.max(lat_p)}, {np.shape(lat_p)}') 
     
-    # print(z_rho)
-    # print(z_theta)
+    # print(f'{z_rho=}')
+    # print(f'{z_theta=}')
     
     ds = xr.Dataset()
     ds.attrs['grid_type']  = um_datain_options['grid_type'].lower()
@@ -442,9 +430,11 @@ def cubelist_to_dataset(cubes,
                                out_prec=out_prec, 
                                )
         coord_names = cube_coord_list(cube)
+        # print(f'{cube=}')
         
         if 'level_height' in coord_names:
             cube_zcoord = cube.coord('level_height')
+            # print(f'{cube_zcoord=}')
             da = identify_zcoord(cube_zcoord, da, 
                                  z_rho, z_theta, coord_list)    
 
@@ -460,8 +450,7 @@ def cubelist_to_dataset(cubes,
             cube_lat_coord = cube.coord(coord_names[lat_index])
             # print(f'{cube_lat_coord=}')
             da = identify_lat_coord(cube_lat_coord, da, 
-                                    lat_v, lat_p, lat_coord_list)    
-        
+                                    lat_v, lat_p, lat_coord_list)            
         ds[stash] = da        
             
         logger.info(f"Cube {cube.name()} STASH {stash} added to output as {da.name}.")
@@ -499,7 +488,7 @@ def open_um_dataset_iris(input_files: str,
 
     """
     
-    logger.info("Reading input cubes.")
+    # logger.info("Reading input cubes.")
             
     cubes = iris.load([input_files, orog_file])
     
