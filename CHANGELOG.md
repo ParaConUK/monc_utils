@@ -4,7 +4,7 @@
 
 [Full Changelog](https://github.com/ParaConUK/monc_utils/compare/v0.5.4...HEAD)
 
-## [v0.5.4](https://github.com/ParaConUK/monc_utils/tree/v0.5.3)
+## [v0.5.4](https://github.com/ParaConUK/monc_utils/tree/v0.5.4)
 
 Substantial changes to the ``io_um`` package to deal with global and lam domains as well as biperiodic.  
 
