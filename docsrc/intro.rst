@@ -21,7 +21,7 @@ Similar functionality has now been added to allow idealised UM data in NetCDF fo
 Input Transforms
 ================
 
-Basic variables (``'u'``, ``'v'``, ``'w'``, ``'th'``, ``'p'``, ``'q_vapour'``, ``'q_cloud_liquid_mass'``, ``'q_cloud_ice_mass'``) are expected to be available in the input file.
+Basic variables (``'u'``, ``'v'``, ``'w'``, ``'theta'``, ``'pressure'``, ``'q_vapour'``, ``'q_cloud_liquid_mass'``, ``'q_cloud_ice_mass'``) are expected to be available in the input file.
 If MONC is used, the horizontal grid specification is corrected on input to ``'x_p'`` or ``'x_u'``, ``'y_p'`` or ``'y_v'`` as appropriate.
 Similarly, ``'z'`` is changed to ``'z_w'`` and ``'zn'`` is to ``'z_p'``.
  
@@ -33,11 +33,11 @@ A number of derived variables have been implemented that are calculated provided
 Examples are:
 
 +---------------+---------------------------------------------------------------+
-|``'th_L'``     | Liquid water potential temperature  :math:`\theta_L`.         |
+|``'theta_L'``     | Liquid water potential temperature  :math:`\theta_L`.         |
 +---------------+---------------------------------------------------------------+
-|``'th_v'``     | Virtual potential temperature  :math:`\theta_v`.              |
+|``'theta_v'``     | Virtual potential temperature  :math:`\theta_v`.              |
 +---------------+---------------------------------------------------------------+
-|``'th_w'``     | Wet bulb potential temperature  :math:`\theta_w`.             |
+|``'theta_w'``     | Wet bulb potential temperature  :math:`\theta_w`.             |
 +---------------+---------------------------------------------------------------+
 |``'q_total'``  | Total water  :math:`q_t`.                                     |
 +---------------+---------------------------------------------------------------+
@@ -45,8 +45,8 @@ Examples are:
 |               |where the mean is the domain mean.                             |
 +---------------+---------------------------------------------------------------+
 
-Spatial derivatives can be specified e.g. ``'dbydx(th)'``.
-Multiple (nested) derivatives are allowed, e.g. ``'dbydy(dbydx(th))'``.
+Spatial derivatives can be specified e.g. ``'dbydx(theta)'``.
+Multiple (nested) derivatives are allowed, e.g. ``'dbydy(dbydx(theta))'``.
 These are read in using :py:func:`~monc_utils.io.datain.get_data` and computed on a native grid, but may be conformed to a requuired grid as per any other variable using :py:func:`~monc_utils.io.datain.get_data_on_grid`.
 The derivatives are calculated using :py:mod:`~monc_utils.data_utils.difference_ops` module that now has general, grid-aware derivative and averaging functions.
 
@@ -62,7 +62,16 @@ The derivatives are calculated using :py:mod:`~monc_utils.data_utils.difference_
 Version History
 ===============
 
-Latest version is 0.4.0
+Latest version is 0.5.4
+
+.. topic:: New at 0.5.4
+
+    #. Substantial changes to the ``io_um`` package to deal with global and lam domains as well as biperiodic.  
+
+.. topic:: New at 0.5.0
+
+    #. Changed name of variables to remove possible confusion. ``'th'`` and ``'p'`` are MONC prognostic variables - differences from the reference state. ``'theta'`` and ``'pressure'`` have the reference state added. ``'thref'`` and ``'pref'`` are the refence state.  
+    #. Removed``ref_dataset`` as source of reference data. Please ensure reference profiles are available in input dataset if needed.
 
 .. topic:: New at 0.4.0
 

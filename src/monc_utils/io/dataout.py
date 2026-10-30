@@ -41,10 +41,15 @@ def save_field(dataset, field, write_to_file=True):
         encoding = {field.name: {"dtype": out_prec}}
         if write_to_file:
             logger.info(f"Saving {field.name} to {fn} with precision {out_prec}")
-            d = dataset['ds'][field.name].to_netcdf(
-                    dataset['file'],
-                    unlimited_dims="time",
-                    mode='a', compute=False, encoding = encoding)
+            if "time" in dataset['ds'][field.name].dims:
+                d = dataset['ds'][field.name].to_netcdf(
+                        dataset['file'],
+                        unlimited_dims=["time"],
+                        mode='a', compute=False, encoding = encoding)
+            else:
+                d = dataset['ds'][field.name].to_netcdf(
+                        dataset['file'],
+                        mode='a', compute=False, encoding = encoding)
             # Toggle ProgressBar depending on compute space
             #   (for cleaner stdout on cluster)
             if monc_utils.executing_on_cluster:

@@ -1,3 +1,4 @@
+
 """
 Created on Mon Aug  2 11:01:11 2021.
 
@@ -9,11 +10,8 @@ import typing
 import datetime
 from monc_utils.data_utils.string_utils import get_string_index
 from monc_utils.io.file_utils import get_full_dim_name
-from monc_utils.io.datain import (set_coord_type,
-                                  set_grid_type,
-                                  add_grid_attrs,
+from monc_utils.io.datain import (add_grid_attrs,
                                   clean_coords,
-                                  correct_grid_and_units, 
                                   get_derived_vars,
                                   get_derivative)
 
@@ -59,8 +57,6 @@ get_um_data_on_grid
             correct_grid_and_units
 
 """
-
-
 
 def set_um_datain_options(opts:dict):
     global um_datain_options
@@ -216,14 +212,7 @@ def coords_to_cartesian(field):
         field = field.assign_coords({old_coord:c})
         return field
     
-    xy_periodic = (field.attrs['grid_type'] == 'xy_periodic')
-    
     units = ''
-
-#    field.attrs['cartesian'] = True
-#    field, xy_periodic = is_xy_periodic(field, 
-#                           xy_periodic_def=
-#                           um_datain_options.get('xy_periodic', True))
     
     for new_coord, old_coord in zip(('x', 'y', 'z', 'time'), 
                                     get_um_coords(field)):
@@ -234,7 +223,6 @@ def coords_to_cartesian(field):
     
         if new_coord == 'z':
             
-            # vert_dim = get_full_dim_name(field, 'lev_eta')
             vert_dim = get_full_dim_name(field, 'eta')
             if vert_dim is not None:
                 if 'rho' in vert_dim: 
@@ -251,7 +239,6 @@ def coords_to_cartesian(field):
                         
             if new_coord_full is None: continue
                 
-            # print(f'{field=} \n {old_coord} {new_coord_full}')
             field = field.rename({old_coord:new_coord_full})
             field = field.swap_dims({vert_dim:new_coord_full})
             
@@ -340,9 +327,7 @@ def get_um_field(ds, name:str, add_name=True):
             raise ValueError(f'Grid type {grid_type} unknown.')
             
     cartesian = (coord_type == 'cartesian')  
-    
-    keep_coords = um_datain_options.get('keep_coords', [])
-    
+        
     if name in ds.data_vars: 
         var_name = name
     elif f'STASH_{name}' in ds.data_vars:
@@ -355,16 +340,14 @@ def get_um_field(ds, name:str, add_name=True):
     if re.match(stash_pattern, name) and add_name:
        field.name = inverse_lookup(name, stash_map)
  
-    field = set_grid_type(field, grid_type_def=grid_type) 
-    field = set_coord_type(field, coord_type_def=coord_type)              
+    field.attrs.setdefault('grid_type', grid_type)
+    field.attrs.setdefault('coord_type', coord_type)            
 
     # print(field)            
     if cartesian:
         field = coords_to_cartesian(field)
     else:
         field = coords_to_latlon(field)
-                 
-    # field = clean_coords(field, keep_coords=keep_coords)
     
     return field
     
@@ -443,11 +426,6 @@ def get_um_data(source_dataset,
         else:
             raise KeyError(f"Cannot retrieve {var_name}")
 
-        # Change 'timeseries...' variable to 'time'
-        # [itime] = get_string_index(vard.dims, ['time'])
-        # if itime is not None:
-            # vard = vard.rename({vard.dims[itime]: 'time'})
-
     except KeyError:
                
         vard = get_um_processed_var(source_dataset,
@@ -460,12 +438,6 @@ def get_um_data(source_dataset,
             return None
         else:
             raise KeyError(f"Data {var_name:s} not in dataset.")
-
-    # else:    
-
-        # vard = correct_um_grid_and_units(var_name, vard, source_dataset,
-                                         # options=options)
-    
 
     return vard
 
@@ -578,11 +550,11 @@ def correct_um_grid_and_units(var_name: str,
         if 'units' not in vard.attrs:        
             vard.attrs['units'] = ''
             
-    vard = set_grid_type(vard, grid_type_def='xy_periodic') 
-    vard = set_coord_type(vard, coord_type_def='cartesian')              
+    vard.attrs.setdefault('grid_type', 'xy_periodic')
+    vard.attrs.setdefault('coord_type', 'cartesian')
 
     for c in 'xy':        
-        field = add_grid_attrs(vard, c, xy_periodic=True)
+        vard = add_grid_attrs(vard, c, xy_periodic=True)
 
     return vard
 
@@ -670,8 +642,6 @@ def get_um_and_transform(source_dataset, var_name,
                       options=options, 
                       add_name=add_name)
     
-    # print(f'{var=}')
-    
     if 'z_w' in var.dims:
         z_w = var.z_w
         z_p_values = 0.5 * (z_w.values[0:-1] + z_w.values[1:])
@@ -716,7 +686,6 @@ def get_um_and_transform(source_dataset, var_name,
     # Re-chunk data if using dask
     if not monc_utils.global_config['no_dask']:
         var = re_chunk(var)
-#    logger.info(var)
 
     return var
 

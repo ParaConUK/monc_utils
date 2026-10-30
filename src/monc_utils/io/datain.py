@@ -5,6 +5,8 @@ Created on Mon Aug  2 11:01:11 2021.
 """
 import numpy as np
 import xarray as xr
+from monc_utils.io import (var_properties,)
+
 from monc_utils.io.file_utils import (options_database,
                                       configure_model_resolution,
                                       )
@@ -19,13 +21,6 @@ import monc_utils.thermodynamics.thermodynamics_constants as thc
 import monc_utils
 import re
 from loguru import logger
-
-PGRID = [False,False,False]
-UGRID = [True,False,False]
-VGRID = [False,True,False]
-WGRID = [False,False,True]
-TGRID = PGRID
-BGRID = [True,True,False]
 
 """
 Hierarchy 
@@ -47,67 +42,14 @@ get_data_on_grid
             correct_grid_and_units
         grid_conform
     save_field
-    
-    
+      
 
 """
-
-def set_coord_type(field:xr.DataArray, 
-                   coord_type_def:str='cartesian') -> xr.DataArray:
-    """
-    Set coord_type attribute in field.
-    Unchanged if already set, otherwise default.
-
-    Parameters
-    ----------
-    field : xr.DataArray
-        Input MONC or UM field.
-    coord_type_def : str, optional
-        DESCRIPTION. The default is 'cartesian'.
-
-    Returns
-    -------
-    field : xr.DataArray 
-        Input field with attrs['coord_type'] set.
-
-    """
-    
-    if 'coord_type' not in field.attrs: 
-    
-        field.attrs['coord_type'] = coord_type_def
-
-    return field
-
-def set_grid_type(field:xr.DataArray, 
-                   grid_type_def:str='xy_periodic') -> xr.DataArray:
-    """
-    Set grid_type attribute in field.
-    Returns field.attrs['xy_periodic'] if available, otherwise default.
-
-    Parameters
-    ----------
-    field : xr.DataArray
-        Input MONC or UM field.
-    grid_type_def : str, optional
-        DESCRIPTION. The default is 'xy_periodic'.
-
-    Returns
-    -------
-    field : xr.DataArray 
-        Input field with attrs['grid_type'] set.
-
-    """
-    
-    if 'grid_type' not in field.attrs: 
-    
-        field.attrs['grid_type'] = grid_type_def.lower()
-            
-    return field
 
 def add_grid_attrs(field:xr.DataArray, coord_name:str, 
                    grid_type:str|None=None) -> xr.DataArray:
     """
-    Add 'xy_periodic', drid spacing and domain size to field.attrs.
+    Add grid_type, grid spacing and domain size to field.attrs.
 
     Parameters
     ----------
@@ -115,20 +57,22 @@ def add_grid_attrs(field:xr.DataArray, coord_name:str,
         Any xr.DataArray.
     coord_name : str
         dimension name or name part.
-    xy_periodic : bool, optional
-        xy_periodic or not. The default is True.
+    grid_type : string, optional
+         Currently one of 'xy_periodic', 'global' or 'lam'. 
+         The default is 'xy_periodic'.
 
     Returns
     -------
     field : xr.DataArray
-        Input field with modified attrs.
+        Input field with modified attrs grid_type, domain 
+        and grid spacing.
 
     """
     
     if grid_type is None:        
         grid_type = field.attrs.get('grid_type', 'xy_periodic')
-
-    field.attrs['grid_type'] = grid_type.lower()
+    else:
+        field.attrs['grid_type'] = grid_type.lower()
         
     coord_name_full = get_full_dim_name(field, coord_name)
     
@@ -172,11 +116,14 @@ def clean_coords(field:xr.DataArray, keep_coords=None) -> xr.DataArray:
     
     if keep_coords is None: keep_coords = []
 
+    drop_var_list = []
     for c in field.coords:
-        if(c in field.dims 
+        if (c in field.dims 
            or c == 'elapsed_time' 
            or any([d in c for d in keep_coords]) ): continue
-        field = field.drop_vars(c)
+        drop_var_list.append(c)
+        
+    if drop_var_list : field = field.drop_vars(c=drop_var_list)
         
     return field
 
@@ -205,38 +152,6 @@ def correct_grid_and_units(var_name: str,
         Required data with corrected grid.
 
     """
-    #   Mapping of data locations on grid via logical triplet:
-    #   logical[u-point,v-point,w-point]
-    #          [False,  False,  False  ] --> (p,th,q)-point
-    var_properties = {"u":{"grid":UGRID,
-                           "units":'m.s-1'},
-                      "v":{"grid":VGRID,
-                           "units":'m.s-1'},
-                      "w":{"grid":WGRID,
-                           "units":'m.s-1'},
-                      "th":{"grid":TGRID,
-                            "units":'K'},
-                      "theta":{"grid":TGRID,
-                            "units":'K'},
-                      "thref":{"grid":TGRID,
-                            "units":'K'},
-                      "p":{"grid":PGRID,
-                           "units":'Pa'},
-                      "pressure":{"grid":PGRID,
-                           "units":'Pa'},
-                      "pref":{"grid":PGRID,
-                           "units":'Pa'},
-                      "q_vapour":{"grid":TGRID,
-                                  "units":'kg/kg'},
-                      "q_cloud_liquid_mass":{"grid":TGRID,
-                                             "units":'kg/kg'},
-                      "q_ice_mass":{"grid":TGRID,
-                                    "units":'kg/kg'},
-                      "u_b":{"grid":BGRID,
-                                             "units":'m.s-1'},
-                      "v_b":{"grid":BGRID,
-                                             "units":'m.s-1'},
-                      }
     
     # Get model resolution values
     if 'dx' not in vard.attrs or 'dx' not in vard.attrs:   
@@ -320,12 +235,17 @@ def correct_grid_and_units(var_name: str,
 
         if 'units' not in vard.attrs:        
             vard.attrs['units'] = ''
+
+    for d in vard.coords:
+        if d[0] in 'xyz' :
+            if 'units' not in vard.coords[d].attrs:
+                vard.coords[d].attrs['units'] = 'm'
             
-    vard = set_grid_type(vard, grid_type_def='xy_periodic') 
-    vard = set_coord_type(vard, coord_type_def='cartesian')              
+    vard.attrs.setdefault('grid_type', 'xy_periodic')
+    vard.attrs.setdefault('coord_type', 'cartesian')
 
     for c in 'xy':        
-        field = add_grid_attrs(vard, c, grid_type='xy_periodic')
+        vard = add_grid_attrs(vard, c, grid_type='xy_periodic')
 
     return vard
 
@@ -451,6 +371,7 @@ def get_data(source_dataset,
         if itime is not None:
             if vard.dims[itime] != 'time':
                 vard = vard.rename({vard.dims[itime]: 'time'})
+            vard.coords['time'].attrs['units'] = 's'
 
     except KeyError:
         
@@ -729,7 +650,7 @@ def get_pref(source_dataset, options=None):
 
     """
          
-    if 'prefn'  not in source_dataset.data_vars:
+    if 'prefn' not in source_dataset.data_vars:
         od = options_database(source_dataset)
         if od is not None:
             p_surf = float(od['surface_pressure'])
